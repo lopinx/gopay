@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>微信安全支付</title>
+    <link href="/public/assets/css/wechat_pay.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="body">
+    <h1 class="mod-title">
+        <span class="ico-wechat"></span><span class="text">微信支付</span>
+    </h1>
+    <div class="mod-ct">
+        <div class="order">
+        </div>
+        <div class="amount">￥<%=order['money']%></div>
+        <div class="qr-image" id="qrcode">
+        </div>
+
+        <div class="detail" id="orderDetail">
+            <dl class="detail-ct" style="display: none;">
+                <dt>商户订单号</dt>
+                <dd id="billId"><%=order['id']%></dd>
+                <dt>创建时间</dt>
+                <dd id="createTime"><%=order['createdAt']%></dd>
+            </dl>
+            <a href="javascript:void(0)" class="arrow"><i class="ico-arrow"></i></a>
+        </div>
+        <div class="tip">
+            <span class="dec dec-left"></span>
+            <span class="dec dec-right"></span>
+            <div class="ico-scan"></div>
+            <div class="tip-text">
+                <p>请使用微信扫一扫</p>
+                <p>扫描二维码完成支付</p>
+            </div>
+        </div>
+        <div class="tip-text">
+        </div>
+    </div>
+    <div class="foot">
+        <div class="inner">
+            <p>手机用户可保存上方二维码到手机中</p>
+            <p>在微信扫一扫中选择“相册”即可</p>
+        </div>
+    </div>
+</div>
+<script src="/public/assets/js/qcloud_util.js"></script>
+<script src="/public/assets/js/jquery-qrcode.min.js"></script>
+<script src="/public/assets/layer/layer.js"></script>
+<script>
+    $('#qrcode').qrcode({
+        text: "<%-url%>",
+        width: 230,
+        height: 230,
+        foreground: "#000000",
+        background: "#ffffff",
+        typeNumber: -1
+    });
+
+    // 订单详情
+    $('#orderDetail .arrow').click(function (event) {
+        if ($('#orderDetail').hasClass('detail-open')) {
+            $('#orderDetail .detail-ct').slideUp(500, function () {
+                $('#orderDetail').removeClass('detail-open');
+            });
+        } else {
+            $('#orderDetail .detail-ct').slideDown(500, function () {
+                $('#orderDetail').addClass('detail-open');
+            });
+        }
+    });
+
+    function request(cb) {
+        return $.get('/api/order_status?type=wxpay&out_trade_no=<%= order['id'] %>', cb)
+    }
+
+    function loop_order() {
+
+        request(function (data, status, xhr) {
+            if (status !== 'success') {
+                setTimeout("loop_order()", 3000);
+                return;
+            }
+            if (data.code === 200) {
+                layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
+                setTimeout(window.location.href = data.data.callback_url, 1000);
+            } else {
+                //layer.msg(data.msg);
+                setTimeout("loop_order()", 4000);
+            }
+        })
+    }
+
+    loop_order()
+
+
+</script>
+
+</body>
+</html>

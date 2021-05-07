@@ -1,0 +1,38 @@
+{
+  "name": "gopay",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tap test/**/*.test.js",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alipay-sdk": "^3.1.5",
+    "ejs": "^3.1.6",
+    "fastify": "^3.0.0",
+    "fastify-autoload": "^3.3.1",
+    "fastify-axios": "^1.2.2",
+    "fastify-cli": "^2.7.0",
+    "fastify-formbody": "^5.0.0",
+    "fastify-plugin": "^3.0.0",
+    "fastify-static": "^4.0.1",
+    "md5-node": "^1.0.1",
+    "mysql2": "^2.2.5",
+    "point-of-view": "^4.14.0",
+    "sequelize": "^6.6.2",
+    "uuid": "^8.3.2",
+    "wechatpay-axios-plugin": "^0.5.0",
+    "yargs": "^16.2.0"
+  },
+  "devDependencies": {
+    "tap": "^14.11.0"
+  }
+}
