@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>微信扫码支付</title>
+    <link href="//lib.baomitu.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet"/>
+
+</head>
+<body>
+<div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 center-block" style="float: none;"><br>
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="text-align: center;">
+            <h3 class="panel-title">
+                <img src="/public/assets/icon/wechat.ico" alt=""/> &nbsp; 微信支付手机版
+            </h3>
+        </div>
+        <div class="list-group" style="text-align: center;">
+            <div class="list-group-item list-group-item-info">可以长按/截屏保存二维码至[相册]扫码付款</div>
+            <div class="list-group-item">
+                <div class="qr-image" id="qrcode"></div>
+            </div>
+
+            <div class="list-group-item"><a href="weixin://" class="btn btn-primary">打开微信</a>&nbsp;&nbsp;
+                <a href="#" onclick="checkResult()" class="btn btn-success">检测支付状态</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/public/assets/js/qcloud_util.js"></script>
+<script src="/public/assets/js/jquery-qrcode.min.js"></script>
+<script src="/public/assets/layer/layer.js"></script>
+
+
+<script>
+    $('#qrcode').qrcode({
+        text: "<%- url %>",
+        width: 230,
+        height: 230,
+        foreground: "#000000",
+        background: "#ffffff",
+        typeNumber: -1
+    });
+
+    function request(cb) {
+        return $.get('/api/order_status?type=wxpay&out_trade_no=<%= out_trade_no %>', cb)
+    }
+
+    function checkResult() {
+        request(function (data, status, xhr) {
+            if (status !== 'success') {
+                layer.msg('服务器错误。');
+                return;
+            }
+            if (data.code === 200) {
+                layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
+                setTimeout(window.location.href = data.data.callback_url, 1000);
+            } else {
+                layer.msg(data.msg);
+            }
+        })
+
+    }
+
+    function loop_order() {
+
+        request(function (data, status, xhr) {
+            if (status !== 'success') {
+                setTimeout("loop_order()", 3000);
+                return;
+            }
+            if (data.code === 200) {
+                layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
+                setTimeout(window.location.href = data.data.callback_url, 1000);
+            } else {
+                //layer.msg(data.msg);
+                setTimeout("loop_order()", 4000);
+            }
+        })
+    }
+
+    // 启动轮询
+    loop_order()
+
+</script>
+
+</body>
+</html>
