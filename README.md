@@ -136,3 +136,6 @@ module.exports = {
 ##### 支付配置可以配置多个，这样就会自动负载均衡到多个支付主体上，目前手机端\PC是靠浏览器UA识别的，自动调转到各自的支付页面。
 
 
+[![g3eMq0.png](https://z3.ax1x.com/2021/05/07/g3eMq0.png)](https://imgtu.com/i/g3eMq0)
+
+
