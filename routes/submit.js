@@ -4,19 +4,6 @@ const {v4: uuidv4} = require('uuid');
 
 module.exports = async function (fastify, opts) {
 
-// https://api.weshop233.cn/submit.php?
-//     money=1.00
-// name=%E5%85%85%E5%80%BC
-// notify_url=https%3A%2F%2Fasmrtt.com%2Fnotify
-// out_trade_no=B327641660482821
-// pid=10001
-// return_url=https%3A%2F%2Fasmrtt.com%2Fxunhusuccess&sitename=%E5%AE%85%E7%94%B7%E5%85%94%E6%AF%94
-// type=alipay
-// sign=a26d15545fba8e1484de33f7fc37bdca
-
-
-    // http://127.0.0.1:3000/submit.php?&money=1.00&name=%E5%85%85%E5%80%BC&notify_url=https%3A%2F%2Fasmrtt.com%2Fnotify&out_trade_no=B327641660482821&pid=10001&return_url=https%3A%2F%2Fasmrtt.com%2Fxunhusuccess&sitename=%E5%AE%85%E7%94%B7%E5%85%94%E6%AF%94&type=alipay&sign=a26d15545fba8e1484de33f7fc37bdca
-
     /**
      * 兼容易支付接口
      */
@@ -204,13 +191,11 @@ module.exports = async function (fastify, opts) {
                 console.log('isMobile ' + isMobile + '   isOnlyNavtive ' + wxpay.isOnlyNavtive())
                 if (!isMobile || wxpay.isOnlyNavtive()) {
                     // 扫码支付
-
                     payurl = opts.web.payUrl + '/pay/wxpay/native?cr=' + wxresp.data.code_url + '&out_trade_no=' + uuid + '&ua=' + (isMobile ? 'mobile' : 'pc')
                     payurl = Buffer.from(payurl).toString('base64')
                     type_sgin = 'base64';
                 } else {
                     // 进入h5支付
-                    // demo https://wx.tenpay.com/cgi-bin/mmpayweb-bin/checkmweb?prepay_id=wx31005032446486bca7d62dfa7d16b20000&package=1182534797
                     payurl = wxresp.data.h5_url
                 }
 
