@@ -1,19 +1,27 @@
 {
   "name": "gopay",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "一个兼容易支付的Nodejs版支付系统，支持支付宝、微信支付、银联支付等主流支付方式。",
   "main": "app.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "tap test/**/*.test.js",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "test": "jest",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "支付系统",
+    "支付宝",
+    "微信支付",
+    "银联支付",
+    "易支付"
+  ],
+  "author": "https://github.com/lopinx",
+  "license": "MIT",
   "dependencies": {
     "alipay-sdk": "^3.1.5",
     "ejs": "^3.1.6",
@@ -24,15 +32,34 @@
     "fastify-formbody": "^5.0.0",
     "fastify-plugin": "^3.0.0",
     "fastify-static": "^4.0.1",
-    "md5-node": "^1.0.1",
-    "mysql2": "^2.2.5",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.0",
     "point-of-view": "^4.14.0",
     "sequelize": "^6.6.2",
+    "sqlite3": "^5.1.7",
     "uuid": "^8.3.2",
-    "wechatpay-axios-plugin": "^0.5.0",
-    "yargs": "^16.2.0"
+    "wechatpay-axios-plugin": "^0.8.14"
   },
   "devDependencies": {
-    "tap": "^14.11.0"
+    "@eslint/js": "^9.27.0",
+    "@types/jest": "^29.5.14",
+    "eslint": "^9.27.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "globals": "^16.1.0",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.3"
+  },
+  "overrides": {
+    "uuid": "^8.3.2"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ]
   }
 }
