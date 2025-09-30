@@ -23,7 +23,7 @@
   "author": "https://github.com/lopinx",
   "license": "MIT",
   "dependencies": {
-    "alipay-sdk": "^3.1.5",
+    "alipay-sdk": "^4.14.0",
     "ejs": "^3.1.6",
     "fastify": "^3.0.0",
     "fastify-autoload": "^3.3.1",
@@ -38,7 +38,7 @@
     "sequelize": "^6.6.2",
     "sqlite3": "^5.1.7",
     "uuid": "^8.3.2",
-    "wechatpay-axios-plugin": "^0.8.14"
+    "wechatpay-node-v3": "^2.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",

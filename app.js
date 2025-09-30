@@ -73,15 +73,7 @@ fastify.register(AutoLoad, {
   options: configure,
 });
 
-fastify.register(AutoLoad, {
-  dir: path.join(__dirname, 'routes/pay/alipay'),
-  options: configure,
-});
-fastify.register(AutoLoad, {
-  dir: path.join(__dirname, 'routes/pay/wechat'),
-  options: configure,
-});
-
+// 改回3000端口
 fastify.listen(process.env.PORT || 3000, '127.0.0.1', (err) => {
   if (err) {
     console.log(err);

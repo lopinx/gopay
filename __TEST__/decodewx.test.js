@@ -1,4 +1,8 @@
-const aes = require('wechatpay-axios-plugin/lib/aes');
+// 使用新的微信支付SDK进行解密
+const WechatPay = require('wechatpay-node-v3');
+
+// Mock WechatPay类以避免在测试中使用实际证书
+jest.mock('wechatpay-node-v3');
 
 describe('微信支付回调通知解密测试', () => {
   // 测试数据
@@ -19,14 +23,36 @@ describe('微信支付回调通知解密测试', () => {
   };
 
   const secret = '00000000001111111111000000000011';
+  
+  // Mock decipher_gcm方法的返回值
+  const mockDecryptedData = JSON.stringify({
+    out_trade_no: 'test_order_123',
+    transaction_id: 'test_transaction_456',
+    trade_state: 'SUCCESS'
+  });
 
-  test('解密微信支付回调数据', () => {
+  WechatPay.mockImplementation(() => {
+    return {
+      decipher_gcm: jest.fn().mockResolvedValue(mockDecryptedData)
+    };
+  });
+
+  test('解密微信支付回调数据', async () => {
+    // 创建微信支付实例
+    const wxpay = new WechatPay({
+      appid: 'test_appid',
+      mchid: 'test_mchid',
+      publicKey: 'test_public_key',
+      privateKey: 'test_private_key',
+      secret: secret
+    });
+    
     // 执行解密操作
-    const cert = aes.decrypt(
-      notify.resource.nonce,
-      secret,
+    const cert = await wxpay.decipher_gcm(
       notify.resource.ciphertext,
-      notify.resource.associated_data
+      notify.resource.associated_data,
+      notify.resource.nonce,
+      secret
     );
 
     // 解析解密结果
@@ -42,6 +68,14 @@ describe('微信支付回调通知解密测试', () => {
       expect(decryptedData.transaction_id).toBeDefined();
       expect(decryptedData.trade_state).toBe('SUCCESS');
     }
+
+    // 验证mock函数被正确调用
+    expect(wxpay.decipher_gcm).toHaveBeenCalledWith(
+      notify.resource.ciphertext,
+      notify.resource.associated_data,
+      notify.resource.nonce,
+      secret
+    );
 
     // 打印解密结果（可选）
     console.log('解密结果:', decryptedData);
