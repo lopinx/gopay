@@ -7,7 +7,7 @@ module.exports = {
 
   user: {
     10001: {
-      key: "XM9b0ce7BE6R9NQ897B0wW0LW031B182",
+      key: "YOUR_MERCHANT_KEY_HERE",
     },
   },
   alipay: [

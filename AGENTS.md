@@ -15,7 +15,7 @@ GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持
 ```
 gopay/
 ├── app.js              # 应用入口，注册所有插件和路由
-├── configure.js        # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
+├── config.js        # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
 ├── plugins/            # Fastify 插件（通过 autoload 自动加载）
 │   ├── alipay.js       # 支付宝 SDK 封装 + 实例缓存池
 │   ├── wxpay.js        # 微信支付 v3 SDK 封装 + 实例缓存池
@@ -53,7 +53,7 @@ gopay/
 | 修改回调通知 | `utils/epayutils.js` | 构建源站回调URL的两个函数 |
 | 数据库模型 | `plugins/mysql.js` | 仅一张表 `gopay_order`，Sequelize自动sync |
 | 响应码/错误码 | `plugins/constans.js` | `fastify.resp.*` 统一响应 |
-| 支付配置 | `configure.js` | 支付宝/微信密钥、商户信息、数据库连接 |
+| 支付配置 | `config.js` | 支付宝/微信密钥、商户信息、数据库连接 |
 | 微信证书 | `./cert/wxpay/` | 已被 .gitignore 忽略，需手动放置 |
 
 ## 业务流程
@@ -78,7 +78,7 @@ gopay/
 ## 约定
 
 - **插件模式**：所有插件使用 `fastify-plugin` 包装，通过 `fastify.decorate()` 挂载到实例
-- **配置传递**：`configure.js` 作为 `opts` 传入所有插件和路由（autoload options）
+- **配置传递**：`config.js` 作为 `opts` 传入所有插件和路由（autoload options）
 - **SDK缓存**：支付宝和微信SDK实例通过 `payCachePool` 对象缓存，避免重复创建
 - **通道校验**：插件初始化时自动过滤不完整的支付通道配置，所有必填字段非空才启用
 - **负载均衡**：配置多个支付账号时，`Math.random()` 从已验证通道中随机选取
@@ -89,7 +89,7 @@ gopay/
 
 ## 反模式（本项目禁止）
 
-- **不要** 直接修改 `configure.js` 中的示例密钥后提交 — 含真实 appId
+- **不要** 直接修改 `config.js` 中的示例密钥后提交 — 含真实 appId
 - **不要** 在 `payCachePool` 外创建支付SDK实例 — 会导致内存泄漏
 - **不要** 修改 `/submit.php` 路由路径 — 兼容易支付协议，源站依赖此路径
 - **不要** 改动签名算法参数顺序 — `filterParams` → `sortParams` → MD5 是易支付标准流程
@@ -128,4 +128,4 @@ wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
 - `.gitignore` 排除了 `/cert/` 和 `/test/` 目录
 - 无 CI/CD 配置、无 Dockerfile、无 linter — 个人项目风格
 - Fastify v3 + 相关插件版本较旧，升级需注意 API 变更
-- `configure.js` 中已包含真实 `appId`（支付宝 2020001169673295），敏感信息需脱敏
+- `config.js` 中已包含真实 `appId`（支付宝 2020001169673295），敏感信息需脱敏

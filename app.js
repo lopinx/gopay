@@ -8,7 +8,7 @@ const Fstatic = require("fastify-static");
 const Fsformbody = require("fastify-formbody");
 const axios = require("fastify-axios");
 const ejs = require("ejs");
-const configure = require("./configure");
+const config = require("./config");
 
 const fastify = Fastify({
   logger: {
@@ -72,25 +72,25 @@ fastify.register(PointView, {
 
 fastify.register(AutoLoad, {
   dir: path.join(__dirname, "plugins"),
-  options: configure,
+  options: config,
 });
 
 fastify.register(AutoLoad, {
   dir: path.join(__dirname, "routes"),
-  options: configure,
+  options: config,
 });
 
 fastify.register(AutoLoad, {
   dir: path.join(__dirname, "routes/pay/alipay"),
-  options: configure,
+  options: config,
 });
 fastify.register(AutoLoad, {
   dir: path.join(__dirname, "routes/pay/wechat"),
-  options: configure,
+  options: config,
 });
 fastify.register(AutoLoad, {
   dir: path.join(__dirname, "routes/pay/paypal"),
-  options: configure,
+  options: config,
 });
 
 fastify.listen(process.env.PORT || 3000, "127.0.0.1", (err) => {

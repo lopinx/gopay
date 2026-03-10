@@ -32,7 +32,7 @@ pm2 start app.js --name=gopay
 
 ## 配置
 
-编辑 `configure.js`：
+编辑 `config.js`：
 
 ```javascript
 module.exports = {
@@ -81,7 +81,7 @@ module.exports = {
 ```
 gopay/
 ├── app.js              # 入口
-├── configure.js         # 配置
+├── config.js         # 配置
 ├── plugins/             # 插件（alipay/wxpay/mysql/user）
 ├── routes/             # 路由
 ├── utils/              # 工具（签名/回调）
