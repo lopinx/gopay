@@ -160,6 +160,65 @@ module.exports = async function (fastify, opts) {
         err = true;
         //console.log(e)
       }
+    } else if (type === "paypal") {
+      let paypal = fastify.paypal.newInstance();
+      if (paypal == null) {
+        return fastify.resp.PAYPAL_NO;
+      }
+
+      let paypalOrderName = name;
+      if (opts.form.subject && opts.form.subject.rewrite) {
+        let subjectText = opts.form.subject.text;
+        if (subjectText) {
+          if (subjectText instanceof Array) {
+            if (subjectText.length > 0) {
+              paypalOrderName =
+                subjectText[Math.floor(Math.random() * subjectText.length)];
+            }
+          } else {
+            paypalOrderName = subjectText;
+          }
+        }
+      }
+
+      let uuid = uuidv4().replace(/-/g, "").toUpperCase();
+
+      try {
+        let paypalResp = await paypal.createOrder(
+          uuid,
+          money,
+          "USD",
+          paypalOrderName,
+        );
+        if (
+          paypalResp.result.status === "APPROVED" ||
+          paypalResp.result.status === "COMPLETED"
+        ) {
+          payurl = paypalResp.result.links.find(
+            (l) => l.rel === "approve",
+          ).href;
+          type_sgin = "url";
+        } else {
+          return fastify.resp.SYS_ERROR("创建PayPal订单失败");
+        }
+
+        await fastify.db.models.Order.create({
+          id: uuid,
+          out_trade_no: out_trade_no,
+          notify_url: notify_url,
+          return_url: return_url,
+          type: type,
+          pid: pid,
+          title: name,
+          money: money,
+          status: 0,
+        });
+
+        fastify.log.info("创建 " + type + " 订单成功：" + uuid);
+      } catch (e) {
+        fastify.log.info("创建 PayPal 订单错误: " + e.message);
+        return fastify.resp.SYS_ERROR(e.message || "创建PayPal订单错误");
+      }
     } else if (type === "wxpay") {
       //微信支付
       // native扫码、h5支付
