@@ -88,10 +88,6 @@ fastify.register(AutoLoad, {
   dir: path.join(__dirname, "routes/pay/wechat"),
   options: config,
 });
-fastify.register(AutoLoad, {
-  dir: path.join(__dirname, "routes/pay/paypal"),
-  options: config,
-});
 
 fastify.listen(process.env.PORT || 3000, "127.0.0.1", (err) => {
   if (err) {
