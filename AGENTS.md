@@ -20,7 +20,6 @@ gopay/
 │   ├── alipay.js       # 支付宝 SDK 封装 + 实例缓存池
 │   ├── wxpay.js        # 微信支付 v3 SDK 封装 + 实例缓存池
 │   ├── database.js   # Sequelize 初始化 + Order 模型定义（支持 SQLite/MySQL/PostgreSQL）
-│   ├── paypal.js     # PayPal SDK 封装 + 实例缓存池
 │   ├── user.js # 易支付商户（PID）查询
 │   └── constans.js     # 统一响应码常量（注意：文件名拼写错误，非 constants）
 ├── routes/             # API 路由（通过 autoload 自动加载）

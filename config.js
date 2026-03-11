@@ -51,16 +51,6 @@ module.exports = {
     },
   ],
 
-  // PayPal 支付配置
-  // npm install @paypal/checkout-server-sdk
-  paypal: [
-    {
-      clientId: "", // PayPal Client ID
-      secret: "", // PayPal Secret
-      mode: "sandbox", // sandbox 或 live
-    },
-  ],
-
   /**
    * 替换源网站至支付宝\微信的订单名称
    */
