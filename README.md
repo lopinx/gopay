@@ -14,6 +14,7 @@
 - ✅ UA 自动识别终端类型
 - ✅ 订单自动重写（防风控）
 - ✅ 启动校验：仅启用配置完整的通道
+- ✅ 数据库：SQLite（默认）/ MySQL / PostgreSQL
 
 ## 快速开始
 
@@ -55,9 +56,12 @@ module.exports = {
         subject: { rewrite: true, text: ['商品A', '商品B'] },
         body: { rewrite: true, text: '商品描述' }
     },
-    db: {
-        mysql: { host: '127.0.0.1', database: 'gopay', username: '', password: '' }
-    }
+db: {
+    dialect: 'sqlite', // sqlite, mysql 或 postgres
+    sqlite: { storage: './data/gopay.db', logging: false },
+    mysql: { host: '127.0.0.1', database: 'gopay', username: '', password: '' },
+    postgres: { host: '127.0.0.1', port: 5432, database: 'gopay', username: '', password: '' }
+}
 }
 ```
 
@@ -82,7 +86,7 @@ module.exports = {
 gopay/
 ├── app.js              # 入口
 ├── config.js         # 配置
-├── plugins/             # 插件（alipay/wxpay/mysql/user）
+├── plugins/ # 插件（alipay/wxpay/database/user/paypal）
 ├── routes/             # 路由
 ├── utils/              # 工具（签名/回调）
 └── templates/          # EJS 模板
@@ -92,7 +96,7 @@ gopay/
 
 - Fastify 3
 - Sequelize 6
-- MySQL
+- SQLite / MySQL / PostgreSQL
 - alipay-sdk
 - wechatpay-axios-plugin
 - @paypal/checkout-server-sdk
