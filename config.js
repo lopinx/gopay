@@ -83,8 +83,27 @@ module.exports = {
   },
 
   db: {
+    dialect: "sqlite", // sqlite, mysql 或 postgres
+    sqlite: {
+      storage: "./data/gopay.db", // SQLite 数据库文件路径
+      logging: false,
+    },
     mysql: {
       host: "127.0.0.1",
+      database: "gopay",
+      username: "",
+      password: "",
+      pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000,
+        idle: 10000,
+      },
+      logging: false,
+    },
+    postgres: {
+      host: "127.0.0.1",
+      port: 5432,
       database: "gopay",
       username: "",
       password: "",

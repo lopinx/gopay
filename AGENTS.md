@@ -8,7 +8,7 @@
 
 GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持支付宝（PC/手机网站）和微信支付（H5/Native扫码），通过 UA 自动识别终端类型。
 
-技术栈：Fastify 3 + Sequelize 6 + MySQL2 + EJS 模板
+技术栈：Fastify 3 + Sequelize 6 + SQLite/MySQL/PostgreSQL + EJS 模板
 
 ## 结构
 
@@ -19,8 +19,9 @@ gopay/
 ├── plugins/            # Fastify 插件（通过 autoload 自动加载）
 │   ├── alipay.js       # 支付宝 SDK 封装 + 实例缓存池
 │   ├── wxpay.js        # 微信支付 v3 SDK 封装 + 实例缓存池
-│   ├── mysql.js        # Sequelize 初始化 + Order 模型定义
-│   ├── user.js         # 易支付商户（PID）查询
+│   ├── database.js   # Sequelize 初始化 + Order 模型定义（支持 SQLite/MySQL/PostgreSQL）
+│   ├── paypal.js     # PayPal SDK 封装 + 实例缓存池
+│   ├── user.js # 易支付商户（PID）查询
 │   └── constans.js     # 统一响应码常量（注意：文件名拼写错误，非 constants）
 ├── routes/             # API 路由（通过 autoload 自动加载）
 │   ├── submit.js       # POST /submit.php — 核心下单入口（兼容易支付）
@@ -51,7 +52,7 @@ gopay/
 | 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，在submit.js增加type分支 |
 | 修改签名逻辑 | `utils/stringutils.js` | `checkSign`/`epaySign` — MD5签名 |
 | 修改回调通知 | `utils/epayutils.js` | 构建源站回调URL的两个函数 |
-| 数据库模型 | `plugins/mysql.js` | 仅一张表 `gopay_order`，Sequelize自动sync |
+| 数据库模型 | `plugins/database.js` | 仅一张表 `gopay_order`，Sequelize自动sync |
 | 响应码/错误码 | `plugins/constans.js` | `fastify.resp.*` 统一响应 |
 | 支付配置 | `config.js` | 支付宝/微信密钥、商户信息、数据库连接 |
 | 微信证书 | `./cert/wxpay/` | 已被 .gitignore 忽略，需手动放置 |
@@ -85,7 +86,7 @@ gopay/
 - **订单号**：微信支付使用自生成 UUID（去横线大写），支付宝使用源站 `out_trade_no`
 - **金额**：支付宝单位为元（字符串），微信单位为分（`parseInt(money) * 100`）
 - **终端识别**：`stringUtils.checkMobile(ua)` 通过 User-Agent 关键词判断移动端
-- **时区**：MySQL 连接强制 `+08:00`
+- **时区**：数据库连接强制 `+08:00`
 
 ## 反模式（本项目禁止）
 
