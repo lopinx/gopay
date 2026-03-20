@@ -47,15 +47,27 @@ module.exports = async function (fastify, opts) {
     if (stringUtils.isEmpty(name)) {
       return fastify.resp.EMPTY_PARAMS("name");
     }
-    if (stringUtils.isEmpty(notify_url)) {
-      return fastify.resp.EMPTY_PARAMS("notify_url");
-    }
-    if (stringUtils.isEmpty(return_url)) {
-      return fastify.resp.EMPTY_PARAMS("return_url");
-    }
-    if (stringUtils.isEmpty(money) || !/^[0-9.]+$/.test(money)) {
-      return fastify.resp.EMPTY_PARAMS("money");
-    }
+	if (stringUtils.isEmpty(notify_url)) {
+		return fastify.resp.EMPTY_PARAMS("notify_url");
+	}
+	if (!/^https?:\/\//i.test(notify_url)) {
+		return fastify.resp.SYS_ERROR("notify_url 格式错误，必须以 http:// 或 https:// 开头");
+	}
+	if (stringUtils.isEmpty(return_url)) {
+		return fastify.resp.EMPTY_PARAMS("return_url");
+	}
+	if (!/^https?:\/\//i.test(return_url)) {
+		return fastify.resp.SYS_ERROR("return_url 格式错误，必须以 http:// 或 https:// 开头");
+	}
+	if (stringUtils.isEmpty(money) || !/^[0-9.]+$/.test(money)) {
+		return fastify.resp.EMPTY_PARAMS("money");
+	}
+	if (parseFloat(money) <= 0) {
+		return fastify.resp.SYS_ERROR("金额必须大于0");
+	}
+	if (parseFloat(money) > 100000) {
+		return fastify.resp.SYS_ERROR("单笔金额不能超过100000元");
+	}
     if (
       stringUtils.isEmpty(out_trade_no) ||
       !/^[a-zA-Z0-9._-|]+$/.test(out_trade_no)
@@ -152,14 +164,15 @@ module.exports = async function (fastify, opts) {
           title: name,
           money: form.totalAmount,
           status: 0,
-        });
-        fastify.log.info(
-          "创建 " + type + " 订单成功：" + JSON.stringify(payOrder),
-        );
-      } catch (e) {
-        err = true;
-        //console.log(e)
-      }
+	});
+	fastify.log.info(
+		"创建 " + type + " 订单成功：" + JSON.stringify(payOrder),
+	);
+} catch (e) {
+	fastify.log.error("支付宝下单失败: " + e.message);
+	fastify.log.error({ outTradeNo: form.outTradeNo, amount: money });
+	err = true;
+}
     } else if (type === "wxpay") {
       //微信支付
       // native扫码、h5支付
@@ -188,19 +201,19 @@ module.exports = async function (fastify, opts) {
       }
 
       let formData = wxpay.formData(isMobile ? "h5" : "native", {
-        total: parseInt(money) * 100,
+	total: Math.round(parseFloat(money) * 100),
         description: wxOrderName,
         notify_url: notifyUrl,
         out_trade_no: uuid, // 使用自己的订单号
         payer_client_ip: client_ip, // 仅 h5 有效
       });
 
-      try {
-        let wxresp = await wxpay.exec(formData);
-        console.log(
-          "isMobile " + isMobile + "   isOnlyNavtive " + wxpay.isOnlyNavtive(),
-        );
-        if (!isMobile || wxpay.isOnlyNavtive()) {
+try {
+	let wxresp = await wxpay.exec(formData);
+	fastify.log.info(
+		"isMobile " + isMobile + " isOnlyNavtive " + wxpay.isOnlyNavtive(),
+	);
+	if (!isMobile || wxpay.isOnlyNavtive()) {
           // 扫码支付
           payurl =
             opts.web.payUrl +
