@@ -61,21 +61,20 @@ module.exports = async function (fastify, opts) {
                     fastify.log.info(tag_notify + ' 支付成功, 但是未找到PID , appId:' + appId + ", out_trade_no:" + out_trade_no)
                     return fastify.resp.ALIPAY_FAIL;
                 }
-                // 构建源站通知 url
+		// 构建源站通知 url
 
-                let order_notify_url = epayUtils.buildPayNotifyCallbackUrl(order, trade_no, user.key)
+		let order_notify_url = epayUtils.buildPayNotifyCallbackUrl(order, trade_no, user.key)
 
-                console.log('order_notify_url：' + order_notify_url)
-                // 发起 http 通知，重试 2 次
-                const {data, status} = await fastify.axios.get(order_notify_url)
-                if (status >= 200 && status < 500) {
-                    fastify.log.info(tag_notify + ' GET ' + data + ', appId:' + appId + ", out_trade_no:" + out_trade_no)
-                    return data
-                } else {
-                    //
-                    fastify.log.info(tag_notify + ' 通知源服务器失败, appId:' + appId + ", out_trade_no:" + out_trade_no)
-                    return fastify.resp.ALIPAY_FAIL
-                }
+		fastify.log.info('order_notify_url：' + order_notify_url)
+		// 发起 http 通知
+		const {data: responseData, status} = await fastify.axios.get(order_notify_url)
+		if (status >= 200 && status < 500) {
+			fastify.log.info(tag_notify + ' GET ' + responseData + ', appId:' + appId + ", out_trade_no:" + out_trade_no)
+			return responseData
+		} else {
+			fastify.log.error(tag_notify + ' 通知源服务器失败, appId:' + appId + ", out_trade_no:" + out_trade_no)
+			return fastify.resp.ALIPAY_FAIL
+		}
             }
 
             return fastify.resp.ALIPAY_OK

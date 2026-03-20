@@ -89,9 +89,33 @@ fastify.register(AutoLoad, {
   options: config,
 });
 
+// Global error handler
+fastify.setErrorHandler((error, request, reply) => {
+  fastify.log.error({
+    error: error.message,
+    stack: error.stack,
+    url: request.url,
+    method: request.method,
+    body: request.body,
+  });
+  
+  if (reply.statusCode >= 500) {
+    reply.send({
+      code: 500,
+      msg: "服务器内部错误",
+      requestId: request.id,
+    });
+  } else {
+    reply.send({
+      code: reply.statusCode,
+      msg: error.message || "请求错误",
+      requestId: request.id,
+    });
+  }
+});
+
 fastify.listen(process.env.PORT || 3000, "127.0.0.1", (err) => {
   if (err) {
-    console.log(err);
     fastify.log.error(err);
     process.exit(1);
   }

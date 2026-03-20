@@ -57,23 +57,20 @@ module.exports = async function (fastify, opts) {
 
                 let order_notify_url = epayUtils.buildPayNotifyCallbackUrl(order,order.id,user.key)
 
-                console.log('order_notify_url：' + order_notify_url)
-                // 发起 http 通知，重试 3 次
-                const {data, status} = await fastify.axios.get(order_notify_url)
-                if (status >= 200 && status < 500) {
-                    fastify.log.info(tag_notify + ' GET ' + data + ', appId:' + appid + ", out_trade_no:" + out_trade_no)
-
-                    return fastify.resp.WXPAY_OK
-
-                } else {
-                    //
-                    fastify.log.info(tag_notify + ' 通知源服务器失败, appId:' + appid + ", out_trade_no:" + out_trade_no)
-                    return fastify.resp.WXPAY_FAIL
-                }
+		fastify.log.info('order_notify_url：' + order_notify_url)
+		// 发起 http 通知
+		const {data: responseData, status} = await fastify.axios.get(order_notify_url)
+		if (status >= 200 && status < 500) {
+			fastify.log.info(tag_notify + ' GET ' + responseData + ', appId:' + appid + ", out_trade_no:" + out_trade_no)
+			return fastify.resp.WXPAY_OK
+		} else {
+			fastify.log.error(tag_notify + ' 通知源服务器失败, appId:' + appid + ", out_trade_no:" + out_trade_no)
+			return fastify.resp.WXPAY_FAIL
+		}
 
             }
 
-            console.log(data.trade_state)
+	fastify.log.info('trade_state: ' + data.trade_state)
 
 
         } catch (e) {
