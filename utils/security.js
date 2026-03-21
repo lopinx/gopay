@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 const BLOCKED_HOSTS = [
   /^localhost$/i,
@@ -13,7 +13,7 @@ const BLOCKED_HOSTS = [
 ];
 
 function isInternalHost(hostname) {
-  return BLOCKED_HOSTS.some(pattern => pattern.test(hostname));
+  return BLOCKED_HOSTS.some((pattern) => pattern.test(hostname));
 }
 
 function isSafeUrl(urlString) {
@@ -44,13 +44,13 @@ function isSafeRedirectUrl(urlString) {
 }
 
 function escapeHtml(unsafe) {
-  if (typeof unsafe !== 'string') return unsafe;
+  if (typeof unsafe !== "string") return unsafe;
   return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function sanitizeMoney(money) {
@@ -62,19 +62,16 @@ function sanitizeMoney(money) {
 }
 
 function generateApiKey() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 function hashApiKey(key) {
-  return crypto.createHash('sha256').update(key).digest('hex');
+  return crypto.createHash("sha256").update(key).digest("hex");
 }
 
 function verifyApiKey(providedKey, storedHash) {
   const providedHash = hashApiKey(providedKey);
-  return crypto.timingSafeEqual(
-    Buffer.from(providedHash),
-    Buffer.from(storedHash)
-  );
+  return crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(storedHash));
 }
 
 module.exports = {

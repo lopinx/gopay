@@ -128,20 +128,46 @@ gopay/
 
 ## 技术栈
 
-| 组件                   | 版本  | 说明            |
-| ---------------------- | ----- | --------------- |
-| Fastify                | 3.x   | Web 框架        |
-| Sequelize              | 6.x   | ORM             |
-| alipay-sdk             | 3.x   | 支付宝 SDK      |
-| wechatpay-axios-plugin | 0.9.x | 微信支付 v3 SDK |
-| EJS                    | 3.x   | 模板引擎        |
+| 组件              | 版本 | 说明            |
+| ----------------- | ---- | --------------- |
+| Fastify           | 5.x  | Web 框架        |
+| Sequelize         | 6.x  | ORM             |
+| alipay-sdk        | 4.x  | 支付宝 SDK      |
+| wechatpay-node-v3 | 2.x  | 微信支付 v3 SDK |
+| EJS               | 5.x  | 模板引擎        |
+| Jest              | 30.x | 测试框架        |
+| Prettier          | 3.x  | 代码格式化      |
+| Husky             | 8.x  | Git hooks       |
 
 ## 开发命令
 
 ```bash
-npm run dev    # fastify-cli 热重载
-npm test       # tap 测试
-node app.js    # 直接启动
+# 开发
+npm run dev           # fastify-cli 热重载
+node app.js           # 直接启动
+
+# 测试
+npm test              # Jest 测试（带覆盖率）
+npm run test:watch    # Jest 监听模式
+
+# 代码格式化
+npm run format        # Prettier 格式化所有文件
+npm run format:check   # 检查代码格式
+npm run lint          # 运行代码检查
+```
+
+## 提交代码
+
+本项目使用 Husky + lint-staged + Prettier 自动格式化代码。
+
+提交前会自动执行：
+
+1. Prettier 格式化暂存文件
+2. Jest 运行测试
+
+```bash
+git add .
+git commit -m "feat: 添加新功能"  # 提交信息使用简体中文
 ```
 
 ## 注意事项
@@ -151,6 +177,16 @@ node app.js    # 直接启动
 - 微信支付金额使用 `parseInt`，不支持小数（如 0.01 元会变成 0 分）
 - 无 CI/CD、无 Dockerfile、无 linter 配置
 
+## 安全特性
+
+- ✅ 原型链污染防护（hasOwnProperty 检查）
+- ✅ 时序攻击防护（crypto.timingSafeEqual）
+- ✅ XSS 防护（EJS 自动转义）
+- ✅ SSRF 防护（URL 安全验证）
+- ✅ 订单原子更新（防止重复通知）
+- ✅ 优雅关闭处理（SIGTERM/SIGINT）
+- ✅ 请求限流（100 请求/分钟）
+
 ## License
 
-ISC
+MIT
