@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# 验证提交信息格式
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" = "HEAD" ]; then
+  echo "⚠️  Detached HEAD state detected, skipping branch name check"
+else
+  # 检查是否在 main/master 分支
+  if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+    echo "❌ 禁止直接在 $BRANCH 分支提交"
+    echo "请创建功能分支：git checkout -b feature/xxx"
+    exit 1
+  fi
+fi
+
+# 运行 lint-staged 进行格式化和验证
+npx lint-staged
+
+# 运行测试
+echo "🧪 Running tests..."
+npm test
+
+# 检查测试结果
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"

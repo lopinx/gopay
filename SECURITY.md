@@ -24,6 +24,7 @@
 **If you have cloned this repository before 2026-03-21**:
 
 1. **Delete your local clone** and re-clone from the remote
+
    ```bash
    rm -rf /path/to/gopay
    git clone https://github.com/lopinx/gopay.git

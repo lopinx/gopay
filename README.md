@@ -39,43 +39,44 @@ pm2 start app.js --name=gopay
 ```javascript
 module.exports = {
   web: {
-    payUrl: 'https://pay.example.com'  // 支付域名，用于回调通知
+    payUrl: "https://pay.example.com", // 支付域名，用于回调通知
   },
   user: {
-    '10001': { key: '商户密钥' }  // PID → KEY 映射
+    10001: { key: "商户密钥" }, // PID → KEY 映射
   },
   alipay: [
     {
-      appId: '20210001xxxx',
-      privateKey: '应用私钥',
-      alipayPublicKey: '支付宝公钥'
-    }
+      appId: "20210001xxxx",
+      privateKey: "应用私钥",
+      alipayPublicKey: "支付宝公钥",
+    },
   ],
   wxpay: [
     {
-      appId: 'wx1234567890',
-      mchid: '1234567890',
-      privateKey: fs.readFileSync('./cert/wxpay/apiclient_key.pem'),
-      serial: '证书序列号',
-      secret: 'APIv3密钥',
-      certs: { '平台证书序列号': fs.readFileSync('./cert/wxpay/platform.pem') },
-      only_native: false  // true 则强制扫码模式
-    }
+      appId: "wx1234567890",
+      mchid: "1234567890",
+      privateKey: fs.readFileSync("./cert/wxpay/apiclient_key.pem"),
+      serial: "证书序列号",
+      secret: "APIv3密钥",
+      certs: { 平台证书序列号: fs.readFileSync("./cert/wxpay/platform.pem") },
+      only_native: false, // true 则强制扫码模式
+    },
   ],
   form: {
-    subject: { rewrite: true, text: ['商品A', '商品B'] },  // 随机标题防风控
-    body: { rewrite: true, text: '商品描述' }
+    subject: { rewrite: true, text: ["商品A", "商品B"] }, // 随机标题防风控
+    body: { rewrite: true, text: "商品描述" },
   },
   db: {
-    dialect: 'sqlite',  // sqlite | mysql | postgres
-    sqlite: { storage: './data/gopay.db', logging: false },
-    mysql: { host: '127.0.0.1', database: 'gopay', username: '', password: '' },
-    postgres: { host: '127.0.0.1', port: 5432, database: 'gopay', username: '', password: '' }
-  }
-}
+    dialect: "sqlite", // sqlite | mysql | postgres
+    sqlite: { storage: "./data/gopay.db", logging: false },
+    mysql: { host: "127.0.0.1", database: "gopay", username: "", password: "" },
+    postgres: { host: "127.0.0.1", port: 5432, database: "gopay", username: "", password: "" },
+  },
+};
 ```
 
 **重要**：
+
 - 支付通道所有必填字段必须完整配置，否则该通道会被忽略
 - 微信证书需提前通过 `wxpay crt` 命令获取
 
@@ -90,15 +91,15 @@ wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
 
 ## API 接口
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/submit.php` | POST | 下单入口（易支付协议兼容） |
-| `/api/order_status` | GET | 订单状态查询 |
-| `/pay/alipay_notify` | POST | 支付宝异步回调 |
-| `/pay/alipay_return` | GET | 支付宝同步返回 |
-| `/pay/wxpay_notify/:appid` | POST | 微信支付异步回调 |
-| `/pay/wxpay/native` | GET | 微信扫码支付页面 |
-| `/go` | GET | 支付跳转中间页 |
+| 接口                       | 方法 | 说明                       |
+| -------------------------- | ---- | -------------------------- |
+| `/submit.php`              | POST | 下单入口（易支付协议兼容） |
+| `/api/order_status`        | GET  | 订单状态查询               |
+| `/pay/alipay_notify`       | POST | 支付宝异步回调             |
+| `/pay/alipay_return`       | GET  | 支付宝同步返回             |
+| `/pay/wxpay_notify/:appid` | POST | 微信支付异步回调           |
+| `/pay/wxpay/native`        | GET  | 微信扫码支付页面           |
+| `/go`                      | GET  | 支付跳转中间页             |
 
 ## 目录结构
 
@@ -127,13 +128,13 @@ gopay/
 
 ## 技术栈
 
-| 组件 | 版本 | 说明 |
-|------|------|------|
-| Fastify | 3.x | Web 框架 |
-| Sequelize | 6.x | ORM |
-| alipay-sdk | 3.x | 支付宝 SDK |
+| 组件                   | 版本  | 说明            |
+| ---------------------- | ----- | --------------- |
+| Fastify                | 3.x   | Web 框架        |
+| Sequelize              | 6.x   | ORM             |
+| alipay-sdk             | 3.x   | 支付宝 SDK      |
 | wechatpay-axios-plugin | 0.9.x | 微信支付 v3 SDK |
-| EJS | 3.x | 模板引擎 |
+| EJS                    | 3.x   | 模板引擎        |
 
 ## 开发命令
 

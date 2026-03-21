@@ -7,9 +7,14 @@
     "test": "test"
   },
   "scripts": {
-    "test": "tap test/**/*.test.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
     "start": "fastify start -l info app.js",
-    "dev": "fastify start -w -l info -P app.js"
+    "dev": "fastify start -w -l info -P app.js",
+    "prepare": "husky install",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,css,scss,less}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,css,scss,less}\"",
+    "lint": "npm run format:check"
   },
   "keywords": [],
   "author": "",
@@ -37,6 +42,10 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "tap": "^21.6.2"
+    "husky": "^8.0.0",
+    "jest": "^30.3.0",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "supertest": "^7.2.2"
   }
 }

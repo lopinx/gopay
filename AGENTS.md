@@ -40,15 +40,15 @@ gopay/
 
 ## 查找指南
 
-| 任务 | 位置 | 说明 |
-|------|------|------|
-| 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，submit.js增加type分支 |
-| 修改签名逻辑 | `utils/stringutils.js` | `checkSign`/`epaySign` — MD5签名 |
-| 修改回调通知 | `utils/epayutils.js` | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl` |
-| 数据库模型 | `plugins/database.js` | 单表 `gopay_order`，字段：id/out_trade_no/notify_url/return_url/type/pid/title/money/status |
-| 响应码 | `plugins/constans.js` | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR等） |
-| 支付配置 | `config.js` | 支付宝/微信密钥、商户信息、数据库连接 |
-| 微信证书 | `./cert/wxpay/` | .gitignore 已忽略 |
+| 任务         | 位置                            | 说明                                                                                        |
+| ------------ | ------------------------------- | ------------------------------------------------------------------------------------------- |
+| 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，submit.js增加type分支                                                      |
+| 修改签名逻辑 | `utils/stringutils.js`          | `checkSign`/`epaySign` — MD5签名                                                            |
+| 修改回调通知 | `utils/epayutils.js`            | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl`                                     |
+| 数据库模型   | `plugins/database.js`           | 单表 `gopay_order`，字段：id/out_trade_no/notify_url/return_url/type/pid/title/money/status |
+| 响应码       | `plugins/constans.js`           | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR等）                                               |
+| 支付配置     | `config.js`                     | 支付宝/微信密钥、商户信息、数据库连接                                                       |
+| 微信证书     | `./cert/wxpay/`                 | .gitignore 已忽略                                                                           |
 
 ## 业务流程
 
@@ -90,12 +90,12 @@ POST /submit.php
 
 ## 已修复问题
 
-| 问题 | 位置 | 修复内容 |
-|------|------|----------|
-| ~~变量遮蔽~~ | `routes/pay/wechat/notify.js:62` | 重命名为 `responseData` |
-| ~~错误吞没~~ | `routes/submit.js:159-162` | 添加 `fastify.log.error` |
-| ~~类型检查错误~~ | `plugins/user.js:7` | 改为 `typeof pid === 'number'` |
-| ~~金额精度~~ | `routes/submit.js:191` | 改为 `Math.round(parseFloat(money) * 100)` |
+| 问题             | 位置                             | 修复内容                                   |
+| ---------------- | -------------------------------- | ------------------------------------------ |
+| ~~变量遮蔽~~     | `routes/pay/wechat/notify.js:62` | 重命名为 `responseData`                    |
+| ~~错误吞没~~     | `routes/submit.js:159-162`       | 添加 `fastify.log.error`                   |
+| ~~类型检查错误~~ | `plugins/user.js:7`              | 改为 `typeof pid === 'number'`             |
+| ~~金额精度~~     | `routes/submit.js:191`           | 改为 `Math.round(parseFloat(money) * 100)` |
 
 ## 新增功能
 
@@ -136,17 +136,17 @@ wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
 
 ### 类型（type）
 
-| 类型 | 说明 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | `feat: 添加微信支付退款功能` |
-| `fix` | 修复 bug | `fix: 修复订单状态更新失败的问题` |
-| `docs` | 文档更新 | `docs: 更新 API 接口文档` |
-| `style` | 代码格式（不影响代码运行的变动） | `style: 格式化代码，去除多余空格` |
-| `refactor` | 重构（既不是新增功能，也不是修复 bug） | `refactor: 重构支付回调处理逻辑` |
-| `perf` | 性能优化 | `perf: 优化数据库查询性能` |
-| `test` | 增加测试 | `test: 添加订单创建单元测试` |
-| `chore` | 构建过程或辅助工具的变动 | `chore: 升级依赖版本` |
-| `security` | 安全相关修复 | `security: 修复原型链污染漏洞` |
+| 类型       | 说明                                   | 示例                              |
+| ---------- | -------------------------------------- | --------------------------------- |
+| `feat`     | 新功能                                 | `feat: 添加微信支付退款功能`      |
+| `fix`      | 修复 bug                               | `fix: 修复订单状态更新失败的问题` |
+| `docs`     | 文档更新                               | `docs: 更新 API 接口文档`         |
+| `style`    | 代码格式（不影响代码运行的变动）       | `style: 格式化代码，去除多余空格` |
+| `refactor` | 重构（既不是新增功能，也不是修复 bug） | `refactor: 重构支付回调处理逻辑`  |
+| `perf`     | 性能优化                               | `perf: 优化数据库查询性能`        |
+| `test`     | 增加测试                               | `test: 添加订单创建单元测试`      |
+| `chore`    | 构建过程或辅助工具的变动               | `chore: 升级依赖版本`             |
+| `security` | 安全相关修复                           | `security: 修复原型链污染漏洞`    |
 
 ### 范围（scope）
 

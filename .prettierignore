@@ -1,0 +1,33 @@
+# 依赖目录
+node_modules/
+
+# 构建输出
+dist/
+build/
+
+# 日志
+*.log
+logs/
+
+# 数据库
+data/
+*.db
+*.sqlite
+
+# 证书
+cert/
+
+# 测试输出
+.tap/
+coverage/
+.nyc_output/
+
+# 锁定文件
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 其他
+.DS_Store
+*.min.js
+*.bundle.js
