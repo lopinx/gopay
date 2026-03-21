@@ -1,54 +1,69 @@
 # GoPay 项目知识库
 
-**生成时间:** 2026-03-19
-**提交:** bc78c88
+**生成时间:** 2026-03-21
+**提交:** d9ae1e4
 **分支:** main
 
 ## 概述
 
 GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持支付宝（PC/手机网站）和微信支付（H5/Native扫码），通过 UA 自动识别终端类型。
 
-**技术栈：** Fastify 3 + Sequelize 6 + SQLite/MySQL/PostgreSQL + EJS
+**技术栈：** Fastify 5 + Sequelize 6 + SQLite/MySQL/PostgreSQL + EJS
 
 ## 结构
 
 ```
 gopay/
-├── app.js              # 入口：注册插件、路由、axios拦截器
-├── config.js           # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
-├── plugins/            # Fastify 插件（autoload 自动加载）
-│   ├── alipay.js       # 支付宝 SDK + payCachePool 缓存
-│   ├── wxpay.js        # 微信支付 v3 SDK + payCachePool 缓存
-│   ├── database.js     # Sequelize + Order 模型（单表 gopay_order）
-│   ├── user.js         # 易支付商户 PID 查询
-│   └── constans.js     # 响应码（文件名拼写错误，勿改）
-├── routes/             # API 路由（autoload）
-│   ├── submit.js       # POST /submit.php — 核心下单入口
-│   ├── order.js        # GET /api/order_status
-│   ├── redirect.js     # GET /go 支付跳转中间页
+├── app.js                    # 入口：注册插件、路由、axios拦截器
+├── config.js                 # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
+├── plugins/                  # Fastify 插件（autoload 自动加载）
+│   ├── alipay.js             # 支付宝 SDK + payCachePool 缓存
+│   ├── wxpay.js              # 微信支付 v3 SDK + payCachePool 缓存
+│   ├── database.js           # Sequelize + Order 模型（单表 gopay_order）
+│   ├── user.js               # 易支付商户 PID 查询
+│   └── constans.js           # 响应码（文件名拼写错误，勿改）
+├── routes/                   # API 路由（autoload）
+│   ├── submit.js             # POST /submit.php — 核心下单入口
+│   ├── order.js              # GET /api/order_status
+│   ├── redirect.js           # GET /go 支付跳转中间页
+│   ├── health.js             # GET /health + /ready 健康检查
 │   └── pay/
-│       ├── alipay/notify.js   # POST /pay/alipay_notify + GET /pay/alipay_return
+│       ├── alipay/notify.js  # POST /pay/alipay_notify + GET /pay/alipay_return
 │       └── wechat/
-│           ├── notify.js      # POST /pay/wxpay_notify/:appid
-│           └── native.js      # GET /pay/wxpay/native 扫码页
+│           ├── notify.js       # POST /pay/wxpay_notify/:appid
+│           └── native.js       # GET /pay/wxpay/native 扫码页
 ├── utils/
-│   ├── stringutils.js  # 签名：filterParams→sortParams→MD5，UA检测
-│   └── epayutils.js    # 构建源站回调 URL
-├── templates/          # EJS 视图
-└── public/assets/      # 静态资源
+│   ├── stringutils.js        # 签名：filterParams→sortParams→MD5，UA检测
+│   ├── epayutils.js          # 构建源站回调 URL
+│   └── security.js           # 安全工具：URL验证、金额校验等
+├── test/                     # E2E 测试
+│   ├── e2e.test.js           # 端到端测试
+│   └── setup.js              # 测试辅助函数
+├── templates/                # EJS 视图
+├── public/assets/            # 静态资源
+├── .husky/                   # Git hooks
+│   └── pre-commit            # 提交前钩子
+├── .prettierrc.json          # Prettier 配置
+├── .prettierignore           # Prettier 忽略规则
+├── .lintstagedrc.json        # lint-staged 配置
+├── jest.config.js            # Jest 测试配置
+├── SECURITY.md               # 安全说明
+└── LICENSE                   # MIT 许可证
 ```
 
 ## 查找指南
 
-| 任务         | 位置                            | 说明                                                                                        |
-| ------------ | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，submit.js增加type分支                                                      |
-| 修改签名逻辑 | `utils/stringutils.js`          | `checkSign`/`epaySign` — MD5签名                                                            |
-| 修改回调通知 | `utils/epayutils.js`            | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl`                                     |
-| 数据库模型   | `plugins/database.js`           | 单表 `gopay_order`，字段：id/out_trade_no/notify_url/return_url/type/pid/title/money/status |
-| 响应码       | `plugins/constans.js`           | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR等）                                               |
-| 支付配置     | `config.js`                     | 支付宝/微信密钥、商户信息、数据库连接                                                       |
-| 微信证书     | `./cert/wxpay/`                 | .gitignore 已忽略                                                                           |
+| 任务         | 位置                            | 说明                                                    |
+| ------------ | ------------------------------- | ------------------------------------------------------- |
+| 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，submit.js增加type分支                  |
+| 修改签名逻辑 | `utils/stringutils.js`          | `checkSign`/`epaySign` — MD5签名，含时序攻击防护        |
+| 修改回调通知 | `utils/epayutils.js`            | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl` |
+| 安全工具     | `utils/security.js`             | URL安全验证、金额校验、HTML转义                         |
+| 数据库模型   | `plugins/database.js`           | 单表 `gopay_order`，含索引优化                          |
+| 响应码       | `plugins/constans.js`           | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR等）           |
+| 支付配置     | `config.js`                     | 支付宝/微信密钥、商户信息、数据库连接                   |
+| 微信证书     | `./cert/wxpay/`                 | .gitignore 已忽略                                       |
+| 健康检查     | `routes/health.js`              | `/health` 和 `/ready` 端点                              |
 
 ## 业务流程
 
@@ -218,10 +233,28 @@ git commit -m "perf(database): 添加订单查询索引" \
 3. **文档**：功能变更需同步更新相关文档
 4. **粒度**：一次提交只做一件事，便于代码审查和回滚
 
-## 备注
+## 命令
 
-- 项目名与 Go 语言无关，是"易支付"替代品
-- `.gitignore` 排除 `/cert/` 和 `/test/`
-- 无 CI/CD、无 Dockerfile、无 linter — 个人项目风格
-- Fastify v3 版本较旧，升级需注意 API 变更
-- config.js 敏感信息已脱敏，实际配置需手动填写
+```bash
+# 开发
+node app.js           # 直接启动，端口 3000
+npm run dev           # fastify-cli 热重载
+
+# 生产
+pm2 start app.js --name=gopay  # 守护进程
+
+# 测试
+npm test              # Jest 测试
+npm run test:watch    # Jest 监听模式
+
+# 格式化
+npm run format        # Prettier 格式化所有文件
+npm run format:check  # 检查格式
+npm run lint          # 运行 linter
+
+# 微信证书
+cd ./node_modules/.bin
+wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
+```
+
+## Git 提交规范
