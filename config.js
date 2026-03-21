@@ -51,6 +51,20 @@ module.exports = {
       // 是否开启仅扫码 , 如果是在手机上就需要另一个手机扫码，保存相册的native二维码是无法支付的
     },
   ],
+  epusdt: [
+    {
+      host: "https://epusdt.yourdomain.com",
+      apiToken: "your_epusdt_api_token_here",
+    },
+  ],
+  paypal: [
+    {
+      clientId: "YOUR_PAYPAL_CLIENT_ID",
+      clientSecret: "YOUR_PAYPAL_CLIENT_SECRET",
+      sandbox: true,
+      currency: "USD",
+    },
+  ],
 
   /**
    * 替换源网站至支付宝\微信的订单名称

@@ -8,6 +8,8 @@ module.exports = fp(async function (fastify, opts) {
     PID_ERROR: { code: 403, msg: "PID不存在" },
     ALIPAY_NO: { code: 400, msg: "未配置 alipay 渠道信息" },
     WXPAY_NO: { code: 400, msg: "未配置 wxpay 渠道信息" },
+    USDT_NO: { code: 400, msg: "未配置 epusdt 渠道信息" },
+    PAYPAL_NO: { code: 400, msg: "未配置 paypal 渠道信息" },
     SYS_ERROR: function (s) {
       return { code: 500, msg: s };
     },
