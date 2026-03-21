@@ -120,10 +120,108 @@ cd ./node_modules/.bin
 wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
 ```
 
+## Git 提交规范
+
+本项目遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范，提交信息使用**简体中文**。
+
+### 提交信息格式
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### 类型（type）
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `feat` | 新功能 | `feat: 添加微信支付退款功能` |
+| `fix` | 修复 bug | `fix: 修复订单状态更新失败的问题` |
+| `docs` | 文档更新 | `docs: 更新 API 接口文档` |
+| `style` | 代码格式（不影响代码运行的变动） | `style: 格式化代码，去除多余空格` |
+| `refactor` | 重构（既不是新增功能，也不是修复 bug） | `refactor: 重构支付回调处理逻辑` |
+| `perf` | 性能优化 | `perf: 优化数据库查询性能` |
+| `test` | 增加测试 | `test: 添加订单创建单元测试` |
+| `chore` | 构建过程或辅助工具的变动 | `chore: 升级依赖版本` |
+| `security` | 安全相关修复 | `security: 修复原型链污染漏洞` |
+
+### 范围（scope）
+
+可选，用于指定影响的模块：
+
+- `alipay` - 支付宝相关
+- `wxpay` - 微信支付相关
+- `order` - 订单模块
+- `config` - 配置文件
+- `database` - 数据库相关
+- `docs` - 文档
+- `test` - 测试相关
+- `utils` - 工具函数
+- `deps` - 依赖
+
+### 主题（subject）
+
+- 使用**简体中文**
+- 首字母小写
+- 动词开头，不要加句号
+- 简明扼要，不超过 50 个字符
+
+### 正文（body）
+
+- 可选
+- 详细描述修改内容
+- 使用简体中文
+- 可以包含多个段落
+- 说明修改原因和与之前行为的对比
+
+### 页脚（footer）
+
+- 可选
+- 用于引用 Issue 或 PR
+- 格式：`Closes #123` 或 `Refs #456`
+
+### 提交示例
+
+```bash
+# 添加新功能
+git commit -m "feat(order): 添加订单超时自动取消功能" \
+           -m "当订单超过30分钟未支付时，自动将状态设置为已取消" \
+           -m "Closes #42"
+
+# 修复问题
+git commit -m "fix(alipay): 修复回调验签失败的问题" \
+           -m "检查 notify_url 中的 sign 参数是否正确拼接"
+
+# 文档更新
+git commit -m "docs: 更新部署文档，添加 Docker 部署说明"
+
+# 安全修复
+git commit -m "security(stringutils): 修复原型链污染漏洞" \
+           -m "添加 hasOwnProperty 检查，防止恶意参数污染原型链"
+
+# 重构
+git commit -m "refactor(utils): 重构签名验证逻辑" \
+           -m "将签名生成和验证提取到独立模块，提高可测试性"
+
+# 性能优化
+git commit -m "perf(database): 添加订单查询索引" \
+           -m "在 out_trade_no 和 status 字段添加索引，查询性能提升 10 倍"
+```
+
+### 注意事项
+
+1. **敏感信息**：禁止提交包含真实密钥、密码的配置文件
+2. **测试**：重要功能提交前确保测试通过 (`npm test`)
+3. **文档**：功能变更需同步更新相关文档
+4. **粒度**：一次提交只做一件事，便于代码审查和回滚
+
 ## 备注
 
 - 项目名与 Go 语言无关，是"易支付"替代品
 - `.gitignore` 排除 `/cert/` 和 `/test/`
 - 无 CI/CD、无 Dockerfile、无 linter — 个人项目风格
 - Fastify v3 版本较旧，升级需注意 API 变更
-- config.js 已包含真实 appId，敏感信息需脱敏
+- config.js 敏感信息已脱敏，实际配置需手动填写
