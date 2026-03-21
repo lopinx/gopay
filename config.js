@@ -1,7 +1,6 @@
 const fs = require("fs");
 module.exports = {
   web: {
-    // 支付域名，用于回调通知，结尾不加 /
     payUrl: "https://pay.xxxx.com",
   },
 
@@ -13,10 +12,8 @@ module.exports = {
   alipay: [
     {
       appId: "YOUR_ALIPAY_APPID_HERE",
-      // 应用私钥
       privateKey: "YOUR_ALIPAY_PRIVATE_KEY_HERE",
-      // 支付宝公钥
-      alipayPublicKey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3iZpxAQ6o8ndntZQW3P2KXcTAs2Z5G8reEGDDfWYf2EP1zNBzeZ97t7TUCOEYQpzy2WbulgesN87fwjOBls6IRoXHXDzMP2nKy/tO+mZ7FvU7uD6KW9YnWbuWcGH4z0wGiLvcwbhP4X/PpD/ioZ0E1wxOq1pUm60/ixWH1IH+q5Re57tBV5tzJ6la5ZCAE5NqD0AYUwf5wbByr6ic0GUm7OkYEW5X8Yjq4vqAqY9qx325DehKD2egA+NB81jQ7nBsrEGeFbj9xdLwdnYYEIdK6m3UB89pWPF9lrFwOrOueZW/Vm37i9hT4iGd9exCVSzBE5/MWPrhI1ELhA1KIsSXwIDAQAB",
+      alipayPublicKey: "YOUR_ALIPAY_PUBLIC_KEY_HERE",
     },
   ],
   wxpay: [
