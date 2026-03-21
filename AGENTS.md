@@ -6,7 +6,7 @@
 
 ## 概述
 
-GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持支付宝（PC/手机网站）和微信支付（H5/Native扫码），通过 UA 自动识别终端类型。
+GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持支付宝（PC/手机网站）、微信支付（H5/Native扫码）、USDT（epusdt）和 PayPal，通过 UA 自动识别终端类型。
 
 **技术栈：** Fastify 5 + Sequelize 6 + SQLite/MySQL/PostgreSQL + EJS
 
@@ -17,21 +17,28 @@ gopay/
 ├── app.js                    # 入口：注册插件、路由、axios拦截器
 ├── config.js                 # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
 ├── plugins/                  # Fastify 插件（autoload 自动加载）
-│   ├── alipay.js             # 支付宝 SDK + payCachePool 缓存
-│   ├── wxpay.js              # 微信支付 v3 SDK + payCachePool 缓存
-│   ├── database.js           # Sequelize + Order 模型（单表 gopay_order）
-│   ├── user.js               # 易支付商户 PID 查询
-│   └── constans.js           # 响应码（文件名拼写错误，勿改）
+  │ ├── alipay.js                # 支付宝 SDK + payCachePool 缓存
+  │ ├── wxpay.js                 # 微信支付 v3 SDK + payCachePool 缓存
+  │ ├── epusdt.js                # USDT 支付 SDK 封装
+  │ ├── paypal.js                # PayPal SDK 封装
+  │ ├── database.js              # Sequelize + Order 模型（单表 gopay_order）
+  │ ├── user.js                  # 易支付商户 PID 查询
+  │ └── constans.js              # 响应码（文件名拼写错误，勿改）
 ├── routes/                   # API 路由（autoload）
 │   ├── submit.js             # POST /submit.php — 核心下单入口
 │   ├── order.js              # GET /api/order_status
 │   ├── redirect.js           # GET /go 支付跳转中间页
 │   ├── health.js             # GET /health + /ready 健康检查
 │   └── pay/
-│       ├── alipay/notify.js  # POST /pay/alipay_notify + GET /pay/alipay_return
-│       └── wechat/
-│           ├── notify.js       # POST /pay/wxpay_notify/:appid
-│           └── native.js       # GET /pay/wxpay/native 扫码页
+  │     ├── alipay/notify.js     # POST /pay/alipay_notify + GET /pay/alipay_return
+  │     ├── wechat/
+  │     │   ├── notify.js        # POST /pay/wxpay_notify/:appid
+  │     │   └── native.js        # GET /pay/wxpay/native 扫码页
+  │     ├── epusdt/
+  │     │   └── notify.js        # POST /pay/epusdt_notify
+  │     └── paypal/
+  │         ├── notify.js        # POST /pay/paypal_notify
+  │         └── return.js        # GET /pay/paypal_return + /pay/paypal_cancel
 ├── utils/
 │   ├── stringutils.js        # 签名：filterParams→sortParams→MD5，UA检测
 │   ├── epayutils.js          # 构建源站回调 URL

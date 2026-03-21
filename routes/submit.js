@@ -248,6 +248,97 @@ module.exports = async function (fastify, opts) {
         const errmsg = e.response?.data?.message || e.message || "创建微信订单错误";
         return fastify.resp.SYS_ERROR(errmsg);
       }
+    } else if (type === "usdt") {
+      const isUsdt = true;
+      let epusdt = fastify.epusdt.newInstance();
+      if (epusdt == null) {
+        return fastify.resp.USDT_NO;
+      }
+
+      let notifyUrl = opts.web.payUrl + "/pay/epusdt_notify";
+      let redirectUrl = opts.web.payUrl + "/go?orderid=" + out_trade_no;
+
+      try {
+        const result = await epusdt.createOrder(out_trade_no, money, notifyUrl, redirectUrl);
+        payurl = result.payment_url;
+        type_sgin = "link";
+
+        let uuid = uuidv4().replace(/-/g, "").toUpperCase();
+        const sanitizedMoney = security.sanitizeMoney(money);
+        if (!sanitizedMoney) {
+          return fastify.resp.SYS_ERROR("金额格式错误");
+        }
+
+        await fastify.db.models.Order.create({
+          id: uuid,
+          out_trade_no: out_trade_no,
+          notify_url: notify_url,
+          return_url: return_url,
+          type: type,
+          pid: pid,
+          title: name,
+          money: sanitizedMoney,
+          status: 0,
+          attach: epusdt.host,
+        });
+
+        fastify.log.info({ type: type, orderId: uuid, pid: pid }, "USDT订单创建成功");
+      } catch (e) {
+        fastify.log.error("USDT下单失败: " + e.message);
+        fastify.log.error({ outTradeNo: out_trade_no, amount: money });
+        err = true;
+      }
+    } else if (type === "paypal") {
+      let paypal = fastify.paypal.newInstance();
+      if (paypal == null) {
+        return fastify.resp.PAYPAL_NO;
+      }
+
+      let notifyUrl = opts.web.payUrl + "/pay/paypal_notify";
+      let returnUrl = opts.web.payUrl + "/pay/paypal_return?invoiceId=" + out_trade_no;
+      let cancelUrl = opts.web.payUrl + "/pay/paypal_cancel?invoiceId=" + out_trade_no;
+
+      try {
+        const sanitizedMoney = security.sanitizeMoney(money);
+        if (!sanitizedMoney) {
+          return fastify.resp.SYS_ERROR("金额格式错误");
+        }
+
+        const amountValue = parseFloat(sanitizedMoney);
+        if (isNaN(amountValue) || amountValue <= 0) {
+          return fastify.resp.SYS_ERROR("金额数值错误");
+        }
+
+        const result = await paypal.createOrder(
+          out_trade_no,
+          amountValue,
+          name,
+          returnUrl,
+          cancelUrl
+        );
+        payurl = result.approveUrl;
+        type_sgin = "link";
+
+        let uuid = uuidv4().replace(/-/g, "").toUpperCase();
+        await fastify.db.models.Order.create({
+          id: uuid,
+          out_trade_no: out_trade_no,
+          notify_url: notify_url,
+          return_url: return_url,
+          type: type,
+          pid: pid,
+          title: name,
+          money: sanitizedMoney,
+          status: 0,
+          attach: paypal.getClientId(),
+        });
+
+        fastify.log.info({ type: type, orderId: uuid, pid: pid }, "PayPal订单创建成功");
+      } catch (e) {
+        fastify.log.error("PayPal下单失败: " + e.message);
+        fastify.log.error({ outTradeNo: out_trade_no, amount: money });
+        err = true;
+      }
     } else {
       return { code: 404, msg: "其他支付方式开发中" };
     }
