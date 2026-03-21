@@ -42,26 +42,21 @@ module.exports = fp(async function (fastify, opts) {
   } else if (dialect === "postgres") {
     // PostgreSQL 配置
     let postgres = opts.db.postgres;
-    sequelize = new Sequelize(
-      postgres.database,
-      postgres.username,
-      postgres.password,
-      {
-        host: postgres.host,
-        port: postgres.port || 5432,
-        dialect: "postgres",
-        pool: postgres.pool,
-        logging: postgres.logging,
-        timezone: "+08:00",
-      },
-    );
+    sequelize = new Sequelize(postgres.database, postgres.username, postgres.password, {
+      host: postgres.host,
+      port: postgres.port || 5432,
+      dialect: "postgres",
+      pool: postgres.pool,
+      logging: postgres.logging,
+      timezone: "+08:00",
+    });
     fastify.log.info(
       "使用 PostgreSQL 数据库: " +
         postgres.host +
         ":" +
         (postgres.port || 5432) +
         "/" +
-        postgres.database,
+        postgres.database
     );
   } else {
     throw new Error("不支持的数据库类型: " + dialect);
@@ -86,22 +81,22 @@ module.exports = fp(async function (fastify, opts) {
       createdAt: true,
       updatedAt: true,
       indexes: [
-        { fields: ['out_trade_no'] },
-        { fields: ['pid'] },
-        { fields: ['status'] },
-        { fields: ['type'] },
-        { fields: ['createdAt'] },
-        { fields: ['out_trade_no', 'pid'] },
+        { fields: ["out_trade_no"] },
+        { fields: ["pid"] },
+        { fields: ["status"] },
+        { fields: ["type"] },
+        { fields: ["createdAt"] },
+        { fields: ["out_trade_no", "pid"] },
       ],
-    },
+    }
   );
 
   await sequelize.sync();
 
   fastify.decorate("db", sequelize);
-  
-  fastify.addHook('onClose', async () => {
+
+  fastify.addHook("onClose", async () => {
     await sequelize.close();
-    fastify.log.info('数据库连接已关闭');
+    fastify.log.info("数据库连接已关闭");
   });
 });

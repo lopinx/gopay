@@ -44,7 +44,7 @@ module.exports = {
         将输出的 Saved to: ....\wechatpay_36736A4D01F0056B033693E40B6DB995D2A9B6D1.pem 证书用作 value
         */
         "36736A4D01F0056B033693E40B6DB995D2A9B6D1": fs.readFileSync(
-          "./cert/wxpay/wechatpay_36736A4D01F0056B033693E40B6DB995D2A9B6D1.pem",
+          "./cert/wxpay/wechatpay_36736A4D01F0056B033693E40B6DB995D2A9B6D1.pem"
         ),
       },
       only_native: false,

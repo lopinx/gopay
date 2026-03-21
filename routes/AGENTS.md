@@ -4,15 +4,15 @@
 
 ## 路由表
 
-| 路由 | 方法 | 文件 | 职责 |
-|------|------|------|------|
-| `/submit.php` | POST | `submit.js` | 易支付下单入口（核心） |
-| `/api/order_status` | GET | `order.js` | 订单状态查询 |
-| `/go` | GET | `redirect.js` | 支付跳转中间页 |
-| `/pay/alipay_notify` | POST | `pay/alipay/notify.js` | 支付宝异步回调 |
-| `/pay/alipay_return` | GET | `pay/alipay/notify.js` | 支付宝同步返回 |
-| `/pay/wxpay_notify/:appid` | POST | `pay/wechat/notify.js` | 微信异步回调 |
-| `/pay/wxpay/native` | GET | `pay/wechat/native.js` | 扫码支付页 |
+| 路由                       | 方法 | 文件                   | 职责                   |
+| -------------------------- | ---- | ---------------------- | ---------------------- |
+| `/submit.php`              | POST | `submit.js`            | 易支付下单入口（核心） |
+| `/api/order_status`        | GET  | `order.js`             | 订单状态查询           |
+| `/go`                      | GET  | `redirect.js`          | 支付跳转中间页         |
+| `/pay/alipay_notify`       | POST | `pay/alipay/notify.js` | 支付宝异步回调         |
+| `/pay/alipay_return`       | GET  | `pay/alipay/notify.js` | 支付宝同步返回         |
+| `/pay/wxpay_notify/:appid` | POST | `pay/wechat/notify.js` | 微信异步回调           |
+| `/pay/wxpay/native`        | GET  | `pay/wechat/native.js` | 扫码支付页             |
 
 ## 下单流程 (submit.js)
 
@@ -93,7 +93,7 @@ return { code: "SUCCESS", message: "成功" };
 
 ## 响应格式
 
-| 场景 | 支付宝 | 微信 |
-|------|--------|------|
+| 场景 | 支付宝      | 微信                  |
+| ---- | ----------- | --------------------- |
 | 成功 | `"success"` | `{ code: "SUCCESS" }` |
-| 失败 | `"fail"` | `{ code: "FAIL" }` |
+| 失败 | `"fail"`    | `{ code: "FAIL" }`    |

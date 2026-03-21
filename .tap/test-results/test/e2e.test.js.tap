@@ -23,7 +23,7 @@ TAP version 14
       ...
     
     1..5
-not ok 1 - 原型链污染防护测试 # time=1387.608ms
+not ok 1 - 原型链污染防护测试 # time=1362.708ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -44,7 +44,7 @@ not ok 1 - 原型链污染防护测试 # time=1387.608ms
     ok 2 - 错误签名应验证失败
     ok 3 - 应使用 timingSafeEqual 防止时序攻击
     1..3
-ok 2 - 签名验证时序攻击防护 # time=6.026ms
+ok 2 - 签名验证时序攻击防护 # time=8.771ms
 
 # Subtest: 订单创建和查询 E2E
     ok 1 - 订单应创建成功
@@ -55,7 +55,7 @@ ok 2 - 签名验证时序攻击防护 # time=6.026ms
     ok 6 - 应成功更新1条记录
     ok 7 - 重复更新应失败（幂等性）
     1..7
-ok 3 - 订单创建和查询 E2E # time=90.812ms
+ok 3 - 订单创建和查询 E2E # time=86.646ms
 
 # Subtest: 健康检查端点
     ok 1 - 健康检查应返回200
@@ -63,7 +63,7 @@ ok 3 - 订单创建和查询 E2E # time=90.812ms
     ok 3 - 应包含时间戳
     ok 4 - 应包含数据库状态
     1..4
-ok 4 - 健康检查端点 # time=92.811ms
+ok 4 - 健康检查端点 # time=89.485ms
 
 # Subtest: 错误处理 - 500错误隐藏堆栈
     ok 1 - 应返回500
@@ -93,7 +93,7 @@ ok 4 - 健康检查端点 # time=92.811ms
     
     ok 3 - 生产环境不应暴露堆栈
     1..3
-not ok 5 - 错误处理 - 500错误隐藏堆栈 # time=58.216ms
+not ok 5 - 错误处理 - 500错误隐藏堆栈 # time=61.535ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -128,7 +128,7 @@ not ok 5 - 错误处理 - 500错误隐藏堆栈 # time=58.216ms
       ...
     
     1..1
-not ok 6 - 限流机制 # time=41.884ms
+not ok 6 - 限流机制 # time=45.358ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -171,7 +171,7 @@ not ok 6 - 限流机制 # time=41.884ms
       ...
     
     1..1
-not ok 7 - 回调重试机制 # time=51.67ms
+not ok 7 - 回调重试机制 # time=55.983ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -191,7 +191,7 @@ not ok 7 - 回调重试机制 # time=51.67ms
     ok 1 - 应注册 SIGTERM 监听器
     ok 2 - 应注册 SIGINT 监听器
     1..2
-ok 8 - 优雅关闭信号处理 # time=40.886ms
+ok 8 - 优雅关闭信号处理 # time=40.443ms
 
 # Subtest: 数据库索引验证
     not ok 1 - app.db.models.Order.getIndexes is not a function
@@ -216,7 +216,7 @@ ok 8 - 优雅关闭信号处理 # time=40.886ms
       ...
     
     1..1
-not ok 9 - 数据库索引验证 # time=39.748ms
+not ok 9 - 数据库索引验证 # time=42.441ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -259,7 +259,7 @@ not ok 9 - 数据库索引验证 # time=39.748ms
       ...
     
     1..1
-not ok 10 - 模板 XSS 防护 # time=40.55ms
+not ok 10 - 模板 XSS 防护 # time=44.073ms
   ---
   at:
     fileName: test/e2e.test.js
@@ -282,7 +282,7 @@ not ok 10 - 模板 XSS 防护 # time=40.55ms
     ok 5 - 零金额应被拒绝
     ok 6 - 非数字应被拒绝
     1..6
-ok 11 - 金额精度处理 # time=2.744ms
+ok 11 - 金额精度处理 # time=4.209ms
 
 # Subtest: URL 安全验证
     ok 1 - 合法 HTTPS 应通过
@@ -295,17 +295,17 @@ ok 11 - 金额精度处理 # time=2.744ms
     ok 8 - file协议应被拒绝
     ok 9 - javascript协议应被拒绝
     1..9
-ok 12 - URL 安全验证 # time=4.355ms
+ok 12 - URL 安全验证 # time=6.199ms
 
 # Subtest: API Key 鉴权
     ok 1 - 未授权应返回401
     ok 2 - 错误码应为401
     1..2
-ok 13 - API Key 鉴权 # time=38.933ms
+ok 13 - API Key 鉴权 # time=36.631ms
 
 # Subtest: 订单 ID 格式验证
     ok 1 - 应拒绝或验证失败
     1..1
-ok 14 - 订单 ID 格式验证 # time=35.127ms
+ok 14 - 订单 ID 格式验证 # time=33.569ms
 
 1..14

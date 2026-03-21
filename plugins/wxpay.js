@@ -93,37 +93,26 @@ class Wxpay {
 }
 
 module.exports = fp(async function (fastify, opts) {
-  let wxpayRequiredFields = [
-    "appId",
-    "mchid",
-    "privateKey",
-    "serial",
-    "secret",
-    "certs",
-  ];
+  let wxpayRequiredFields = ["appId", "mchid", "privateKey", "serial", "secret", "certs"];
   let validWxpayList = [];
   if (opts.wxpay && opts.wxpay.length > 0) {
     for (let i = 0; i < opts.wxpay.length; i++) {
       let cfg = opts.wxpay[i];
       let missingFields = wxpayRequiredFields.filter(function (f) {
         if (f === "certs") {
-          return (
-            !cfg[f] ||
-            typeof cfg[f] !== "object" ||
-            Object.keys(cfg[f]).length === 0
-          );
+          return !cfg[f] || typeof cfg[f] !== "object" || Object.keys(cfg[f]).length === 0;
         }
         return !cfg[f];
       });
       if (missingFields.length > 0) {
         fastify.log.warn(
           "Wxpay 通道 #" +
-          i +
-          " (appId: " +
-          (cfg.appId || "空") +
-          ") 缺少字段: " +
-          missingFields.join(", ") +
-          "，已忽略",
+            i +
+            " (appId: " +
+            (cfg.appId || "空") +
+            ") 缺少字段: " +
+            missingFields.join(", ") +
+            "，已忽略"
         );
       } else {
         validWxpayList.push(cfg);
@@ -163,11 +152,14 @@ module.exports = fp(async function (fastify, opts) {
           }
         }
 
-  const crypto = require('crypto');
-    let wxpayindex = crypto.randomInt(0, len);
-    let wxpayc = validWxpayList[wxpayindex];
+        const crypto = require("crypto");
+        let wxpayindex = crypto.randomInt(0, len);
+        let wxpayc = validWxpayList[wxpayindex];
 
-    fastify.log.info({ channel: 'wxpay', index: wxpayindex, appId: wxpayc.appId }, "随机使用 Wxpay");
+        fastify.log.info(
+          { channel: "wxpay", index: wxpayindex, appId: wxpayc.appId },
+          "随机使用 Wxpay"
+        );
 
         return new Wxpay({
           appId: wxpayc.appId,

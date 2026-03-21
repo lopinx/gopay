@@ -48,7 +48,7 @@ module.exports = async function (fastify, opts) {
     if (stringUtils.isEmpty(name)) {
       return fastify.resp.EMPTY_PARAMS("name");
     }
-  if (stringUtils.isEmpty(notify_url)) {
+    if (stringUtils.isEmpty(notify_url)) {
       return fastify.resp.EMPTY_PARAMS("notify_url");
     }
     if (!security.isSafeUrl(notify_url)) {
@@ -60,19 +60,16 @@ module.exports = async function (fastify, opts) {
     if (!security.isSafeUrl(return_url)) {
       return fastify.resp.SYS_ERROR("return_url 格式错误或包含不安全地址");
     }
-	if (stringUtils.isEmpty(money) || !/^[0-9.]+$/.test(money)) {
-		return fastify.resp.EMPTY_PARAMS("money");
-	}
-	if (parseFloat(money) <= 0) {
-		return fastify.resp.SYS_ERROR("金额必须大于0");
-	}
-	if (parseFloat(money) > 100000) {
-		return fastify.resp.SYS_ERROR("单笔金额不能超过100000元");
-	}
-    if (
-      stringUtils.isEmpty(out_trade_no) ||
-      !/^[a-zA-Z0-9._-|]+$/.test(out_trade_no)
-    ) {
+    if (stringUtils.isEmpty(money) || !/^[0-9.]+$/.test(money)) {
+      return fastify.resp.EMPTY_PARAMS("money");
+    }
+    if (parseFloat(money) <= 0) {
+      return fastify.resp.SYS_ERROR("金额必须大于0");
+    }
+    if (parseFloat(money) > 100000) {
+      return fastify.resp.SYS_ERROR("单笔金额不能超过100000元");
+    }
+    if (stringUtils.isEmpty(out_trade_no) || !/^[a-zA-Z0-9._-|]+$/.test(out_trade_no)) {
       return fastify.resp.EMPTY_PARAMS("out_trade_no");
     }
     if (stringUtils.isEmpty(sign)) {
@@ -116,8 +113,7 @@ module.exports = async function (fastify, opts) {
           if (subjectText instanceof Array) {
             // 随机一个标题
             if (subjectText.length > 0) {
-              form.subject =
-                subjectText[Math.floor(Math.random() * subjectText.length)];
+              form.subject = subjectText[Math.floor(Math.random() * subjectText.length)];
             }
           } else {
             form.subject = subjectText;
@@ -149,7 +145,7 @@ module.exports = async function (fastify, opts) {
           form.body,
           isMobile ? "wap" : "page",
           notifyUrl,
-          returnUrl,
+          returnUrl
         );
 
         // 创建数据库订单信息
@@ -165,13 +161,13 @@ module.exports = async function (fastify, opts) {
           title: name,
           money: form.totalAmount,
           status: 0,
-	});
-    fastify.log.info({ type: type, orderId: payOrder.id, pid: pid }, "订单创建成功");
-} catch (e) {
-	fastify.log.error("支付宝下单失败: " + e.message);
-	fastify.log.error({ outTradeNo: form.outTradeNo, amount: money });
-	err = true;
-}
+        });
+        fastify.log.info({ type: type, orderId: payOrder.id, pid: pid }, "订单创建成功");
+      } catch (e) {
+        fastify.log.error("支付宝下单失败: " + e.message);
+        fastify.log.error({ outTradeNo: form.outTradeNo, amount: money });
+        err = true;
+      }
     } else if (type === "wxpay") {
       //微信支付
       // native扫码、h5支付
@@ -190,8 +186,7 @@ module.exports = async function (fastify, opts) {
           if (subjectText instanceof Array) {
             // 随机一个标题
             if (subjectText.length > 0) {
-              wxOrderName =
-                subjectText[Math.floor(Math.random() * subjectText.length)];
+              wxOrderName = subjectText[Math.floor(Math.random() * subjectText.length)];
             }
           } else {
             wxOrderName = subjectText;
@@ -199,24 +194,22 @@ module.exports = async function (fastify, opts) {
         }
       }
 
-    const totalCents = Math.round(parseFloat(money) * 100 + Number.EPSILON);
-    if (isNaN(totalCents) || totalCents <= 0) {
-      return fastify.resp.SYS_ERROR("金额转换错误");
-    }
-    let formData = wxpay.formData(isMobile ? "h5" : "native", {
-      total: totalCents,
-      description: wxOrderName,
-      notify_url: notifyUrl,
-      out_trade_no: uuid,
-      payer_client_ip: client_ip,
-    });
+      const totalCents = Math.round(parseFloat(money) * 100 + Number.EPSILON);
+      if (isNaN(totalCents) || totalCents <= 0) {
+        return fastify.resp.SYS_ERROR("金额转换错误");
+      }
+      let formData = wxpay.formData(isMobile ? "h5" : "native", {
+        total: totalCents,
+        description: wxOrderName,
+        notify_url: notifyUrl,
+        out_trade_no: uuid,
+        payer_client_ip: client_ip,
+      });
 
-try {
-	let wxresp = await wxpay.exec(formData);
-	fastify.log.info(
-		"isMobile " + isMobile + " isOnlyNavtive " + wxpay.isOnlyNavtive(),
-	);
-	if (!isMobile || wxpay.isOnlyNavtive()) {
+      try {
+        let wxresp = await wxpay.exec(formData);
+        fastify.log.info("isMobile " + isMobile + " isOnlyNavtive " + wxpay.isOnlyNavtive());
+        if (!isMobile || wxpay.isOnlyNavtive()) {
           // 扫码支付
           payurl =
             opts.web.payUrl +
@@ -233,28 +226,28 @@ try {
           payurl = wxresp.data.h5_url;
         }
 
-    const sanitizedMoney = security.sanitizeMoney(money);
-    if (!sanitizedMoney) {
-      return fastify.resp.SYS_ERROR("金额格式错误");
-    }
-    let order = await fastify.db.models.Order.create({
-      id: uuid,
-      out_trade_no: out_trade_no,
-      notify_url: notify_url,
-      return_url: return_url,
-      type: type,
-      pid: pid,
-      title: name,
-      money: sanitizedMoney,
-      status: 0,
-    });
+        const sanitizedMoney = security.sanitizeMoney(money);
+        if (!sanitizedMoney) {
+          return fastify.resp.SYS_ERROR("金额格式错误");
+        }
+        let order = await fastify.db.models.Order.create({
+          id: uuid,
+          out_trade_no: out_trade_no,
+          notify_url: notify_url,
+          return_url: return_url,
+          type: type,
+          pid: pid,
+          title: name,
+          money: sanitizedMoney,
+          status: 0,
+        });
 
         fastify.log.info("创建 " + type + " 订单成功：" + uuid);
-    } catch (e) {
-      fastify.log.error("微信下单失败:", e);
-      const errmsg = e.response?.data?.message || e.message || "创建微信订单错误";
-      return fastify.resp.SYS_ERROR(errmsg);
-    }
+      } catch (e) {
+        fastify.log.error("微信下单失败:", e);
+        const errmsg = e.response?.data?.message || e.message || "创建微信订单错误";
+        return fastify.resp.SYS_ERROR(errmsg);
+      }
     } else {
       return { code: 404, msg: "其他支付方式开发中" };
     }

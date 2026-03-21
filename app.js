@@ -42,9 +42,9 @@ fastify.decorate("axios", axiosInstance);
 
 fastify.register(rateLimit, {
   max: 100,
-  timeWindow: '1 minute',
+  timeWindow: "1 minute",
   keyGenerator: (request) => request.ip,
-  errorResponseBuilder: () => ({ code: 429, msg: '请求过于频繁，请稍后再试' })
+  errorResponseBuilder: () => ({ code: 429, msg: "请求过于频繁，请稍后再试" }),
 });
 
 fastify.register(Fsformbody);
@@ -81,8 +81,8 @@ fastify.register(AutoLoad, {
 });
 
 fastify.setErrorHandler((error, request, reply) => {
-  const isDev = process.env.NODE_ENV === 'development';
-  
+  const isDev = process.env.NODE_ENV === "development";
+
   fastify.log.error({
     error: error.message,
     stack: isDev ? error.stack : undefined,
@@ -113,16 +113,16 @@ const shutdown = async (signal) => {
     if (fastify.db) {
       await fastify.db.close();
     }
-    fastify.log.info('服务已安全关闭');
+    fastify.log.info("服务已安全关闭");
     process.exit(0);
   } catch (e) {
-    fastify.log.error('关闭服务时出错:', e);
+    fastify.log.error("关闭服务时出错:", e);
     process.exit(1);
   }
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
 
 fastify.listen({ port: process.env.PORT || 3000, host: process.env.HOST || "127.0.0.1" }, (err) => {
   if (err) {

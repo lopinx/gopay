@@ -1,5 +1,5 @@
 {
-  "date": "2026-03-21T08:40:21.104Z",
+  "date": "2026-03-21T12:56:46.539Z",
   "argv": [
     "/home/lopinx/.config/nvm/versions/node/v24.14.0/bin/node",
     "/home/lopinx/Documents/DevOps/gopay/test/e2e.test.js"
@@ -12,10 +12,10 @@
   ],
   "NODE_OPTIONS": "\"--import=file:///home/lopinx/Documents/DevOps/gopay/node_modules/@tapjs/processinfo/dist/esm/import.mjs\"",
   "cwd": "/home/lopinx/Documents/DevOps/gopay",
-  "pid": 1019291,
-  "ppid": 1018996,
+  "pid": 1127732,
+  "ppid": 1127716,
   "parent": null,
-  "uuid": "da04133c-705b-4673-b3be-231215bbba01",
+  "uuid": "ebbef5a9-b78f-4f7c-b29c-20f29f6b0948",
   "files": [
     "/home/lopinx/Documents/DevOps/gopay/test/e2e.test.js",
     "/home/lopinx/Documents/DevOps/gopay/plugins/database.js",
@@ -699,9 +699,9 @@
       "/home/lopinx/Documents/DevOps/gopay/node_modules/@tapjs/test/src/default-plugins.ts"
     ]
   },
-  "root": "da04133c-705b-4673-b3be-231215bbba01",
+  "root": "ebbef5a9-b78f-4f7c-b29c-20f29f6b0948",
   "externalID": "test/e2e.test.js",
   "code": 1,
   "signal": null,
-  "runtime": 4442.993436
+  "runtime": 4418.24966
 }

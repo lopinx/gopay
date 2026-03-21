@@ -22,15 +22,7 @@ class Alipay {
     }
   }
 
-  exec(
-    outTradeNo,
-    totalAmount,
-    subject,
-    body,
-    agent = "page",
-    notifyUrl = "",
-    returnUrl = "",
-  ) {
+  exec(outTradeNo, totalAmount, subject, body, agent = "page", notifyUrl = "", returnUrl = "") {
     const bizContent = {
       outTradeNo: outTradeNo,
       productCode: "FAST_INSTANT_TRADE_PAY",
@@ -65,12 +57,12 @@ module.exports = fp(async function (fastify, opts) {
       if (missingFields.length > 0) {
         fastify.log.warn(
           "Alipay 通道 #" +
-          i +
-          " (appId: " +
-          (cfg.appId || "空") +
-          ") 缺少字段: " +
-          missingFields.join(", ") +
-          "，已忽略",
+            i +
+            " (appId: " +
+            (cfg.appId || "空") +
+            ") 缺少字段: " +
+            missingFields.join(", ") +
+            "，已忽略"
         );
       } else {
         validAlipayList.push(cfg);
@@ -95,27 +87,22 @@ module.exports = fp(async function (fastify, opts) {
           }
           if (temp_i !== -1) {
             let alipayc = validAlipayList[temp_i];
-            return new Alipay(
-              alipayc.appId,
-              alipayc.privateKey,
-              alipayc.alipayPublicKey,
-            );
+            return new Alipay(alipayc.appId, alipayc.privateKey, alipayc.alipayPublicKey);
           } else {
             return null;
           }
         }
 
-  const crypto = require('crypto');
-    let alipayindex = crypto.randomInt(0, len);
-    let alipayc = validAlipayList[alipayindex];
+        const crypto = require("crypto");
+        let alipayindex = crypto.randomInt(0, len);
+        let alipayc = validAlipayList[alipayindex];
 
-    fastify.log.info({ channel: 'alipay', index: alipayindex, appId: alipayc.appId }, "随机使用 Alipay");
-
-        return new Alipay(
-          alipayc.appId,
-          alipayc.privateKey,
-          alipayc.alipayPublicKey,
+        fastify.log.info(
+          { channel: "alipay", index: alipayindex, appId: alipayc.appId },
+          "随机使用 Alipay"
         );
+
+        return new Alipay(alipayc.appId, alipayc.privateKey, alipayc.alipayPublicKey);
       } else {
         return null;
       }

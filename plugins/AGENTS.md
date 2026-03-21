@@ -4,13 +4,13 @@ SDK 封装、数据库模型、商户查询、响应码常量。
 
 ## 文件职责
 
-| 文件 | 装饰为 | 职责 |
-|------|--------|------|
-| `alipay.js` | `fastify.alipay` | 支付宝 SDK 工厂 + payCachePool 缓存 |
-| `wxpay.js` | `fastify.wxpay` | 微信支付 v3 SDK 工厂 + payCachePool 缓存 |
-| `database.js` | `fastify.db` | Sequelize 实例 + Order 模型 |
-| `user.js` | `fastify.user` | PID → 商户 key 映射查询 |
-| `constans.js` | `fastify.resp` | 响应构建器（EMPTY_PARAMS/SIGN_ERROR 等） |
+| 文件          | 装饰为           | 职责                                     |
+| ------------- | ---------------- | ---------------------------------------- |
+| `alipay.js`   | `fastify.alipay` | 支付宝 SDK 工厂 + payCachePool 缓存      |
+| `wxpay.js`    | `fastify.wxpay`  | 微信支付 v3 SDK 工厂 + payCachePool 缓存 |
+| `database.js` | `fastify.db`     | Sequelize 实例 + Order 模型              |
+| `user.js`     | `fastify.user`   | PID → 商户 key 映射查询                  |
+| `constans.js` | `fastify.resp`   | 响应构建器（EMPTY_PARAMS/SIGN_ERROR 等） |
 
 ## SDK 插件模式
 
@@ -29,10 +29,10 @@ class Alipay {
 // 插件导出
 module.exports = fp(async function (fastify, opts) {
   // 过滤不完整配置
-  let validList = opts.alipay.filter(cfg => 
+  let validList = opts.alipay.filter(cfg =>
     cfg.appId && cfg.privateKey && cfg.alipayPublicKey
   );
-  
+
   fastify.decorate("alipay", {
     newInstance: (appId = "") => {
       // Math.random() 负载均衡
@@ -71,12 +71,12 @@ module.exports = fp(async function (fastify, opts) {
 
 ```javascript
 // 路由中调用
-return fastify.resp.EMPTY_PARAMS("sign");     // { code: 403, msg: "sign 参数不能为空" }
-return fastify.resp.SIGN_ERROR;               // { code: 403, msg: "请求签名校验失败" }
-return fastify.resp.ALIPAY_NO;                // { code: 400, msg: "未配置 alipay 渠道信息" }
-return fastify.resp.SYS_ERROR("自定义错误");   // { code: 500, msg: "自定义错误" }
-return fastify.resp.ALIPAY_OK;                // "success"（支付宝回调响应）
-return fastify.resp.WXPAY_OK;                 // { code: "SUCCESS", message: "成功" }
+return fastify.resp.EMPTY_PARAMS("sign"); // { code: 403, msg: "sign 参数不能为空" }
+return fastify.resp.SIGN_ERROR; // { code: 403, msg: "请求签名校验失败" }
+return fastify.resp.ALIPAY_NO; // { code: 400, msg: "未配置 alipay 渠道信息" }
+return fastify.resp.SYS_ERROR("自定义错误"); // { code: 500, msg: "自定义错误" }
+return fastify.resp.ALIPAY_OK; // "success"（支付宝回调响应）
+return fastify.resp.WXPAY_OK; // { code: "SUCCESS", message: "成功" }
 ```
 
 ## 反模式
