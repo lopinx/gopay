@@ -9,6 +9,8 @@
 - ✅ 兼容易支付协议，源站无需改动
 - ✅ 支付宝：PC 网站支付、手机网站支付
 - ✅ 微信支付：H5 支付、Native 扫码
+- ✅ USDT 支付：通过 epusdt 支持
+- ✅ PayPal 支付：官方 SDK 集成
 - ✅ 多通道负载均衡（随机选取）
 - ✅ UA 自动识别终端类型
 - ✅ 订单标题自动重写（防风控）
@@ -60,6 +62,20 @@ module.exports = {
       secret: "APIv3密钥",
       certs: { 平台证书序列号: fs.readFileSync("./cert/wxpay/platform.pem") },
       only_native: false, // true 则强制扫码模式
+    },
+  ],
+  epusdt: [
+    {
+      host: "https://epusdt.example.com",
+      apiToken: "your_api_token",
+    },
+  ],
+  paypal: [
+    {
+      clientId: "YOUR_PAYPAL_CLIENT_ID",
+      clientSecret: "YOUR_PAYPAL_CLIENT_SECRET",
+      sandbox: true, // true=sandbox, false=live
+      currency: "USD",
     },
   ],
   form: {

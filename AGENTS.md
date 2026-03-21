@@ -14,79 +14,85 @@ GoPay — 兼容易支付（epay）协议的 Node.js 聚合支付系统。支持
 
 ```
 gopay/
-├── app.js                    # 入口：注册插件、路由、axios拦截器
-├── config.js                 # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
-├── plugins/                  # Fastify 插件（autoload 自动加载）
-  │ ├── alipay.js                # 支付宝 SDK + payCachePool 缓存
-  │ ├── wxpay.js                 # 微信支付 v3 SDK + payCachePool 缓存
-  │ ├── epusdt.js                # USDT 支付 SDK 封装
-  │ ├── paypal.js                # PayPal SDK 封装
-  │ ├── database.js              # Sequelize + Order 模型（单表 gopay_order）
-  │ ├── user.js                  # 易支付商户 PID 查询
-  │ └── constans.js              # 响应码（文件名拼写错误，勿改）
-├── routes/                   # API 路由（autoload）
-│   ├── submit.js             # POST /submit.php — 核心下单入口
-│   ├── order.js              # GET /api/order_status
-│   ├── redirect.js           # GET /go 支付跳转中间页
-│   ├── health.js             # GET /health + /ready 健康检查
+├── app.js                     # 入口：注册插件、路由、axios拦截器
+├── config.js                  # 全局配置（支付密钥、数据库、域名）⚠️ 含敏感信息
+├── plugins/                   # Fastify 插件（autoload 自动加载）
+│   ├── alipay.js              # 支付宝 SDK + payCachePool 缓存
+│   ├── wxpay.js               # 微信支付 v3 SDK + payCachePool 缓存
+│   ├── epusdt.js              # USDT 支付 SDK 封装
+│   ├── paypal.js              # PayPal SDK 封装
+│   ├── database.js            # Sequelize + Order 模型（单表 gopay_order）
+│   ├── user.js                # 易支付商户 PID 查询
+│   └── constans.js            # 响应码（文件名拼写错误，勿改）
+├── routes/                    # API 路由（autoload）
+│   ├── submit.js              # POST /submit.php — 核心下单入口
+│   ├── order.js               # GET /api/order_status
+│   ├── redirect.js            # GET /go 支付跳转中间页
+│   ├── health.js              # GET /health + /ready 健康检查
 │   └── pay/
-  │     ├── alipay/notify.js     # POST /pay/alipay_notify + GET /pay/alipay_return
-  │     ├── wechat/
-  │     │   ├── notify.js        # POST /pay/wxpay_notify/:appid
-  │     │   └── native.js        # GET /pay/wxpay/native 扫码页
-  │     ├── epusdt/
-  │     │   └── notify.js        # POST /pay/epusdt_notify
-  │     └── paypal/
-  │         ├── notify.js        # POST /pay/paypal_notify
-  │         └── return.js        # GET /pay/paypal_return + /pay/paypal_cancel
+│       ├── alipay/notify.js   # POST /pay/alipay_notify + GET /pay/alipay_return
+│       ├── wechat/
+│       │   ├── notify.js      # POST /pay/wxpay_notify/:appid
+│       │   └── native.js      # GET /pay/wxpay/native 扫码页
+│       ├── epusdt/
+│       │   └── notify.js      # POST /pay/epusdt_notify
+│       └── paypal/
+│           ├── notify.js      # POST /pay/paypal_notify
+│           └── return.js      # GET /pay/paypal_return + /pay/paypal_cancel
 ├── utils/
-│   ├── stringutils.js        # 签名：filterParams→sortParams→MD5，UA检测
-│   ├── epayutils.js          # 构建源站回调 URL
-│   └── security.js           # 安全工具：URL验证、金额校验等
-├── test/                     # E2E 测试
-│   ├── e2e.test.js           # 端到端测试
-│   └── setup.js              # 测试辅助函数
-├── templates/                # EJS 视图
-├── public/assets/            # 静态资源
-├── .husky/                   # Git hooks
-│   └── pre-commit            # 提交前钩子
-├── .prettierrc.json          # Prettier 配置
-├── .prettierignore           # Prettier 忽略规则
-├── .lintstagedrc.json        # lint-staged 配置
-├── jest.config.js            # Jest 测试配置
-├── SECURITY.md               # 安全说明
-└── LICENSE                   # MIT 许可证
+│   ├── stringutils.js         # 签名：filterParams→sortParams→MD5，UA检测
+│   ├── epayutils.js           # 构建源站回调 URL
+│   └── security.js            # 安全工具：URL验证、金额校验等
+├── test/                      # E2E 测试
+│   ├── e2e.test.js            # 端到端测试
+│   └── setup.js               # 测试辅助函数
+├── templates/                 # EJS 视图
+├── public/assets/             # 静态资源
+├── .husky/                    # Git hooks
+│   └── pre-commit             # 提交前钩子
+├── .prettierrc.json           # Prettier 配置
+├── .prettierignore            # Prettier 忽略规则
+├── .lintstagedrc.json         # lint-staged 配置
+├── jest.config.js             # Jest 测试配置
+├── SECURITY.md                # 安全说明
+└── LICENSE                    # MIT 许可证
 ```
 
 ## 查找指南
 
-| 任务         | 位置                            | 说明                                                    |
-| ------------ | ------------------------------- | ------------------------------------------------------- |
-| 新增支付渠道 | `plugins/` + `routes/submit.js` | 新建插件封装SDK，submit.js增加type分支                  |
-| 修改签名逻辑 | `utils/stringutils.js`          | `checkSign`/`epaySign` — MD5签名，含时序攻击防护        |
-| 修改回调通知 | `utils/epayutils.js`            | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl` |
-| 安全工具     | `utils/security.js`             | URL安全验证、金额校验、HTML转义                         |
-| 数据库模型   | `plugins/database.js`           | 单表 `gopay_order`，含索引优化                          |
-| 响应码       | `plugins/constans.js`           | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR等）           |
-| 支付配置     | `config.js`                     | 支付宝/微信密钥、商户信息、数据库连接                   |
-| 微信证书     | `./cert/wxpay/`                 | .gitignore 已忽略                                       |
-| 健康检查     | `routes/health.js`              | `/health` 和 `/ready` 端点                              |
+| 任务         | 位置                                                         | 说明                                                            |
+| ------------ | ------------------------------------------------------------ | --------------------------------------------------------------- |
+| 新增支付渠道 | `plugins/` + `routes/submit.js`                              | 新建插件封装SDK，submit.js增加type分支                          |
+| 修改签名逻辑 | `utils/stringutils.js`                                       | `checkSign`/`epaySign` — MD5签名，含时序攻击防护                |
+| 修改回调通知 | `utils/epayutils.js`                                         | `buildPayNotifyCallbackUrl`/`buildPayReturnCallbackUrl`         |
+| USDT回调     | `routes/pay/epusdt/notify.js`                                | epusdt MD5验签，返回 ok                                         |
+| PayPal回调   | `routes/pay/paypal/notify.js`, `routes/pay/paypal/return.js` | PayPal Webhook/Return处理，服务端验证                           |
+| 安全工具     | `utils/security.js`                                          | URL安全验证、金额校验、HTML转义                                 |
+| 数据库模型   | `plugins/database.js`                                        | 单表 `gopay_order`，含索引优化，attach字段存储通道标识          |
+| 响应码       | `plugins/constans.js`                                        | `fastify.resp.*`（EMPTY_PARAMS/SIGN_ERROR/USDT_NO/PAYPAL_NO等） |
+| 支付配置     | `config.js`                                                  | 支付宝/微信/USDT/PayPal密钥、商户信息、数据库连接               |
+| 微信证书     | `./cert/wxpay/`                                              | .gitignore 已忽略                                               |
+| 健康检查     | `routes/health.js`                                           | `/health` 和 `/ready` 端点                                      |
 
 ## 业务流程
 
 ```
 POST /submit.php
-  ↓ 参数校验（UA/type/pid/name/notify_url/return_url/money/out_trade_no/sign）
-  ↓ PID查询 → fastify.user.getUser(pid)
-  ↓ 签名验证 → filterParams → sortParams → MD5(params + ukey)
-  ↓ 类型分发
-  ├─ alipay → alipay.exec() → Order.create(out_trade_no)
-  └─ wxpay  → wxpay.exec() → Order.create(UUID)
-  ↓ 渲染 submit.ejs → 自动跳转支付页
+↓ 参数校验（UA/type/pid/name/notify_url/return_url/money/out_trade_no/sign）
+↓ PID查询 → fastify.user.getUser(pid)
+↓ 签名验证 → filterParams → sortParams → MD5(params + ukey)
+↓ 类型分发
+├─ alipay → alipay.exec() → Order.create(out_trade_no)
+├─ wxpay → wxpay.exec() → Order.create(UUID)
+├─ usdt → epusdt.createOrder() → Order.create(UUID, attach: host)
+└─ paypal → paypal.createOrder() → Order.create(UUID, attach: clientId)
+↓ 渲染 submit.ejs → 自动跳转支付页
 
 支付完成回调
-  ├─ POST /pay/alipay_notify → RSA2验签 → update status=1 → GET源站notify_url
-  └─ POST /pay/wxpay_notify/:appid → AES解密 → update status=1 → GET源站notify_url
+├─ POST /pay/alipay_notify → RSA2验签 → update status=1 → GET源站notify_url
+├─ POST /pay/wxpay_notify/:appid → AES解密 → update status=1 → GET源站notify_url
+├─ POST /pay/epusdt_notify → MD5验签 → update status=1 → GET源站notify_url
+└─ POST /pay/paypal_notify → Server-side verify → update status=1 → GET源站notify_url
 ```
 
 ## 约定
@@ -96,8 +102,9 @@ POST /submit.php
 - **SDK缓存**：`payCachePool` 对象缓存实例，禁止外部创建
 - **通道校验**：插件初始化过滤不完整配置，必填字段非空才启用
 - **负载均衡**：`Math.random()` 从已验证通道随机选取
-- **订单号**：支付宝用源站 `out_trade_no`，微信用自生成 UUID
-- **金额**：支付宝元（字符串），微信分（`parseInt * 100`）
+- **多通道安全**：epusdt/paypal 在 `attach` 字段保存创建时的配置标识（host/clientId），回调时通过 `newInstance(identifier)` 获取正确实例
+- **订单号**：支付宝用源站 `out_trade_no`，微信/USDT/PayPal 用自生成 UUID
+- **金额**：支付宝元（字符串），微信分（`parseInt * 100`），USDT/PayPal 元（数值）
 - **终端识别**：`checkMobile(ua)` 匹配 User-Agent 关键词
 - **时区**：数据库连接强制 `+08:00`
 - **异步风格**：路由用 `async/await`，拦截器用 Promise 链
@@ -112,30 +119,41 @@ POST /submit.php
 
 ## 已修复问题
 
-| 问题             | 位置                             | 修复内容                                   |
-| ---------------- | -------------------------------- | ------------------------------------------ |
-| ~~变量遮蔽~~     | `routes/pay/wechat/notify.js:62` | 重命名为 `responseData`                    |
-| ~~错误吞没~~     | `routes/submit.js:159-162`       | 添加 `fastify.log.error`                   |
-| ~~类型检查错误~~ | `plugins/user.js:7`              | 改为 `typeof pid === 'number'`             |
-| ~~金额精度~~     | `routes/submit.js:191`           | 改为 `Math.round(parseFloat(money) * 100)` |
+| 问题                        | 位置                                                         | 修复内容                                                                                               |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| ~~变量遮蔽~~                | `routes/pay/wechat/notify.js:62`                             | 重命名为 `responseData`                                                                                |
+| ~~错误吞没~~                | `routes/submit.js:159-162`                                   | 添加 `fastify.log.error`                                                                               |
+| ~~类型检查错误~~            | `plugins/user.js:7`                                          | 改为 `typeof pid === 'number'`                                                                         |
+| ~~金额精度~~                | `routes/submit.js:191`                                       | 改为 `Math.round(parseFloat(money) * 100)`                                                             |
+| ~~epusdt 多通道验签失败~~   | `routes/pay/epusdt/notify.js`                                | 使用 `order.attach` 保存 host，回调时通过 `newInstance(host)` 获取正确实例                             |
+| ~~PayPal 多通道验签失败~~   | `routes/pay/paypal/notify.js`, `routes/pay/paypal/return.js` | 使用 `order.attach` 保存 clientId，回调时通过 `newInstance(clientId)` 获取正确实例                     |
+| ~~PayPal Webhook 安全漏洞~~ | `routes/pay/paypal/notify.js`                                | 添加服务端验证：从 PayPal API 查询订单状态，验证 `status === "APPROVED" \| "COMPLETED"` 后才更新数据库 |
 
 ## 新增功能
 
 - **全局错误处理器** `app.js` - 统一错误响应格式
 - **输入校验** `routes/submit.js` - URL格式、金额范围校验
+- **USDT 支付** `plugins/epusdt.js` + `routes/pay/epusdt/notify.js` - 通过 epusdt 支持 USDT 支付
+- **PayPal 支付** `plugins/paypal.js` + `routes/pay/paypal/notify.js` + `routes/pay/paypal/return.js` - PayPal 官方 SDK 集成
 
 ## 命令
 
 ```bash
 # 开发
-node app.js                    # 直接启动，端口 3000
-npm run dev                    # fastify-cli 热重载
+node app.js                  # 直接启动，端口 3000
+npm run dev                  # fastify-cli 热重载
 
 # 生产
 pm2 start app.js --name=gopay  # 守护进程
 
 # 测试
-npm test                       # tap test/**/*.test.js
+npm test                     # Jest 测试
+npm run test:watch           # Jest 监听模式
+
+# 格式化
+npm run format               # Prettier 格式化所有文件
+npm run format:check         # 检查格式
+npm run lint                 # 运行 linter
 
 # 微信证书
 cd ./node_modules/.bin
@@ -210,27 +228,27 @@ wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
 ```bash
 # 添加新功能
 git commit -m "feat(order): 添加订单超时自动取消功能" \
-           -m "当订单超过30分钟未支付时，自动将状态设置为已取消" \
-           -m "Closes #42"
+  -m "当订单超过30分钟未支付时，自动将状态设置为已取消" \
+  -m "Closes #42"
 
 # 修复问题
 git commit -m "fix(alipay): 修复回调验签失败的问题" \
-           -m "检查 notify_url 中的 sign 参数是否正确拼接"
+  -m "检查 notify_url 中的 sign 参数是否正确拼接"
 
 # 文档更新
 git commit -m "docs: 更新部署文档，添加 Docker 部署说明"
 
 # 安全修复
 git commit -m "security(stringutils): 修复原型链污染漏洞" \
-           -m "添加 hasOwnProperty 检查，防止恶意参数污染原型链"
+  -m "添加 hasOwnProperty 检查，防止恶意参数污染原型链"
 
 # 重构
 git commit -m "refactor(utils): 重构签名验证逻辑" \
-           -m "将签名生成和验证提取到独立模块，提高可测试性"
+  -m "将签名生成和验证提取到独立模块，提高可测试性"
 
 # 性能优化
 git commit -m "perf(database): 添加订单查询索引" \
-           -m "在 out_trade_no 和 status 字段添加索引，查询性能提升 10 倍"
+  -m "在 out_trade_no 和 status 字段添加索引，查询性能提升 10 倍"
 ```
 
 ### 注意事项
@@ -239,29 +257,3 @@ git commit -m "perf(database): 添加订单查询索引" \
 2. **测试**：重要功能提交前确保测试通过 (`npm test`)
 3. **文档**：功能变更需同步更新相关文档
 4. **粒度**：一次提交只做一件事，便于代码审查和回滚
-
-## 命令
-
-```bash
-# 开发
-node app.js           # 直接启动，端口 3000
-npm run dev           # fastify-cli 热重载
-
-# 生产
-pm2 start app.js --name=gopay  # 守护进程
-
-# 测试
-npm test              # Jest 测试
-npm run test:watch    # Jest 监听模式
-
-# 格式化
-npm run format        # Prettier 格式化所有文件
-npm run format:check  # 检查格式
-npm run lint          # 运行 linter
-
-# 微信证书
-cd ./node_modules/.bin
-wxpay crt -m {mchid} -s {serial} -f {privateKey.pem} -k {secret} -o
-```
-
-## Git 提交规范
