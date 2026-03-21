@@ -4,6 +4,24 @@ const epayUtils = require('../../../utils/epayutils')
 const tag_notify = 'alipay_notify';
 const tag_return = 'alipay_return';
 
+async function notifyWithRetry(fastify, url, appId, out_trade_no, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const { status } = await fastify.axios.get(url);
+      if (status >= 200 && status < 500) {
+        fastify.log.info(tag_notify + ' 通知成功, appId:' + appId + ", out_trade_no:" + out_trade_no);
+        return true;
+      }
+    } catch (e) {
+      fastify.log.error(tag_notify + ' 通知失败 (attempt ' + (i + 1) + '/' + maxRetries + '), appId:' + appId + ", out_trade_no:" + out_trade_no);
+    }
+    if (i < maxRetries - 1) {
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+    }
+  }
+  return false;
+}
+
 
 module.exports = async function (fastify, opts) {
 
@@ -44,38 +62,33 @@ module.exports = async function (fastify, opts) {
                 fastify.log.info(tag_notify + ' 支付成功, 但是未找到订单信息 , appId:' + appId + ", out_trade_no:" + out_trade_no)
                 return fastify.resp.ALIPAY_FAIL
             }
-            if (trade_status === 'TRADE_SUCCESS') {
-                //支付成功
-                if (order['status'] !== 1) {
-                    order['status'] = 1
-                    // 更新状态
-                    await order.save()
-                }
-                if (order.status !== 1) {
-                    fastify.log.info(tag_notify + ' 支付成功, 但是更新订单信息失败 , appId:' + appId + ", out_trade_no:" + out_trade_no)
-                }
+    if (trade_status === 'TRADE_SUCCESS') {
+      const [affectedRows] = await fastify.db.models.Order.update(
+        { status: 1 },
+        { where: { out_trade_no: out_trade_no, status: 0 } }
+      );
 
-                let pid = order['pid']
-                let user = fastify.user.getUser(pid)
-                if (user == null) {
-                    fastify.log.info(tag_notify + ' 支付成功, 但是未找到PID , appId:' + appId + ", out_trade_no:" + out_trade_no)
-                    return fastify.resp.ALIPAY_FAIL;
-                }
-		// 构建源站通知 url
+      if (affectedRows === 0 && order['status'] !== 1) {
+        fastify.log.warn(tag_notify + ' 订单状态更新失败，可能已被处理, appId:' + appId + ", out_trade_no:" + out_trade_no);
+      }
 
-		let order_notify_url = epayUtils.buildPayNotifyCallbackUrl(order, trade_no, user.key)
+      let pid = order['pid']
+      let user = fastify.user.getUser(pid)
+      if (user == null) {
+        fastify.log.info(tag_notify + ' 支付成功, 但是未找到PID , appId:' + appId + ", out_trade_no:" + out_trade_no)
+        return fastify.resp.ALIPAY_FAIL;
+      }
 
-		fastify.log.info('order_notify_url：' + order_notify_url)
-		// 发起 http 通知
-		const {data: responseData, status} = await fastify.axios.get(order_notify_url)
-		if (status >= 200 && status < 500) {
-			fastify.log.info(tag_notify + ' GET ' + responseData + ', appId:' + appId + ", out_trade_no:" + out_trade_no)
-			return responseData
-		} else {
-			fastify.log.error(tag_notify + ' 通知源服务器失败, appId:' + appId + ", out_trade_no:" + out_trade_no)
-			return fastify.resp.ALIPAY_FAIL
-		}
-            }
+      let order_notify_url = epayUtils.buildPayNotifyCallbackUrl(order, trade_no, user.key)
+
+      fastify.log.info('order_notify_url：' + order_notify_url)
+      const notifyResult = await notifyWithRetry(fastify, order_notify_url, appId, out_trade_no);
+      if (notifyResult) {
+        return fastify.resp.ALIPAY_OK;
+      } else {
+        return fastify.resp.ALIPAY_FAIL;
+      }
+    }
 
             return fastify.resp.ALIPAY_OK
 
@@ -115,15 +128,14 @@ module.exports = async function (fastify, opts) {
                 fastify.log.info(tag_return + ' 支付成功, 但是未找到订单信息 , appId:' + appId + ", out_trade_no:" + out_trade_no)
                 return fastify.resp.SYS_ERROR('支付成功, 但是发生订单不同步错误, 未找到该订单信息, 请联系卖家客服, appId : ' + appId + 'out_trade_no : ' + out_trade_no);
             }
-            if (order['status'] !== 1) {
-                order['status'] = 1
-                // 更新状态
-                await order.save()
-            }
+    const [affectedRows] = await fastify.db.models.Order.update(
+        { status: 1 },
+        { where: { out_trade_no: out_trade_no, status: 0 } }
+      );
 
-            if (order.status !== 1) {
-                fastify.log.info(tag_return + ' 支付成功, 但是更新订单信息失败 , appId:' + appId + ", out_trade_no:" + out_trade_no)
-            }
+      if (affectedRows === 0 && order['status'] !== 1) {
+        fastify.log.warn(tag_return + ' 订单状态更新失败，可能已被处理, appId:' + appId + ", out_trade_no:" + out_trade_no);
+      }
 
             let pid = order['pid']
 

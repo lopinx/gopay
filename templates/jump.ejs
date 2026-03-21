@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>跳转中...</title>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline';">
+<title>跳转中...</title>
 
 </head>
 <body>
-<script>window.location.href="<%- return_url%>";</script>
+<script>
+(function() {
+  var returnUrl = <%= JSON.stringify(return_url) %>;
+  if (returnUrl && typeof returnUrl === 'string') {
+    window.location.href = returnUrl;
+  } else {
+    document.body.innerHTML = '<p>跳转地址无效</p>';
+  }
+})();
+</script>
 </body>
 </html>

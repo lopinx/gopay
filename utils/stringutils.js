@@ -1,4 +1,5 @@
 const md5 = require('md5-node')
+const crypto = require('crypto')
 
 exports.cutString = function cutString(str, len) {
     if (str.length * 2 <= len) {
@@ -24,26 +25,26 @@ exports.cutString = function cutString(str, len) {
 }
 
 exports.filterParams = function (params) {
-    let descArray = {};
-    for (let key in params) {
-        if (key === 'sign' || key === 'sign_type' || params[key] === '') {
-
-        } else {
-            descArray[key] = params[key]
-        }
+  let descArray = {};
+  for (let key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      if (key === 'sign' || key === 'sign_type' || params[key] === '') {
+      } else {
+        descArray[key] = params[key]
+      }
     }
-    return descArray;
+  }
+  return descArray;
 }
 
 exports.sortParams = function (params) {
+  let keys = Object.keys(params).sort()
+    , sortedParams = {};
 
-    let keys = Object.keys(params).sort()
-        , sortedParams = {};
-
-    for (let i in keys) {
-        sortedParams[keys[i]] = params[keys[i]];
-    }
-    return sortedParams;
+  for (let i = 0; i < keys.length; i++) {
+    sortedParams[keys[i]] = params[keys[i]];
+  }
+  return sortedParams;
 }
 
 /**
@@ -53,12 +54,19 @@ exports.sortParams = function (params) {
  * @param epkey 易支付的商户key XM9b0ce7BE6R9NQ897B0wW0LW031B181
  */
 exports.checkSign = function (params, sign, epkey) {
-    let arg = ''
-    for (let key in params) {
-        arg += key + "=" + params[key] + "&"
+  let arg = ''
+  for (let key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      arg += key + "=" + params[key] + "&"
     }
-    arg = arg.substring(0, arg.length - 1);
-    return md5(arg + epkey.trim()) === sign
+  }
+  arg = arg.substring(0, arg.length - 1);
+  const computed = md5(arg + epkey.trim());
+  try {
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(sign));
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -67,21 +75,25 @@ exports.checkSign = function (params, sign, epkey) {
  * @param epkey
  */
 exports.epaySign = function (params, epkey) {
-    let arg = ''
-    for (let key in params) {
-        arg += key + "=" + params[key] + "&"
+  let arg = ''
+  for (let key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      arg += key + "=" + params[key] + "&"
     }
-    arg = arg.substring(0, arg.length - 1);
-    return md5(arg + epkey.trim())
+  }
+  arg = arg.substring(0, arg.length - 1);
+  return md5(arg + epkey.trim())
 }
 
 exports.getUrlencodeQuery = function (params) {
-    let arg = ''
-    for (let key in params) {
-        arg += key + "=" + encodeURIComponent(params[key]) + "&"
+  let arg = ''
+  for (let key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      arg += key + "=" + encodeURIComponent(params[key]) + "&"
     }
-    arg = arg.substring(0, arg.length - 1);
-    return arg
+  }
+  arg = arg.substring(0, arg.length - 1);
+  return arg
 }
 
 exports.isEmpty = function (obj) {

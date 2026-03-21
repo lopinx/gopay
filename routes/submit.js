@@ -1,5 +1,6 @@
 "use strict";
 const stringUtils = require("../utils/stringutils");
+const security = require("../utils/security");
 const { v4: uuidv4 } = require("uuid");
 
 module.exports = async function (fastify, opts) {
@@ -47,18 +48,18 @@ module.exports = async function (fastify, opts) {
     if (stringUtils.isEmpty(name)) {
       return fastify.resp.EMPTY_PARAMS("name");
     }
-	if (stringUtils.isEmpty(notify_url)) {
-		return fastify.resp.EMPTY_PARAMS("notify_url");
-	}
-	if (!/^https?:\/\//i.test(notify_url)) {
-		return fastify.resp.SYS_ERROR("notify_url 格式错误，必须以 http:// 或 https:// 开头");
-	}
-	if (stringUtils.isEmpty(return_url)) {
-		return fastify.resp.EMPTY_PARAMS("return_url");
-	}
-	if (!/^https?:\/\//i.test(return_url)) {
-		return fastify.resp.SYS_ERROR("return_url 格式错误，必须以 http:// 或 https:// 开头");
-	}
+  if (stringUtils.isEmpty(notify_url)) {
+      return fastify.resp.EMPTY_PARAMS("notify_url");
+    }
+    if (!security.isSafeUrl(notify_url)) {
+      return fastify.resp.SYS_ERROR("notify_url 格式错误或包含不安全地址");
+    }
+    if (stringUtils.isEmpty(return_url)) {
+      return fastify.resp.EMPTY_PARAMS("return_url");
+    }
+    if (!security.isSafeUrl(return_url)) {
+      return fastify.resp.SYS_ERROR("return_url 格式错误或包含不安全地址");
+    }
 	if (stringUtils.isEmpty(money) || !/^[0-9.]+$/.test(money)) {
 		return fastify.resp.EMPTY_PARAMS("money");
 	}
@@ -165,9 +166,7 @@ module.exports = async function (fastify, opts) {
           money: form.totalAmount,
           status: 0,
 	});
-	fastify.log.info(
-		"创建 " + type + " 订单成功：" + JSON.stringify(payOrder),
-	);
+    fastify.log.info({ type: type, orderId: payOrder.id, pid: pid }, "订单创建成功");
 } catch (e) {
 	fastify.log.error("支付宝下单失败: " + e.message);
 	fastify.log.error({ outTradeNo: form.outTradeNo, amount: money });
@@ -200,13 +199,17 @@ module.exports = async function (fastify, opts) {
         }
       }
 
-      let formData = wxpay.formData(isMobile ? "h5" : "native", {
-	total: Math.round(parseFloat(money) * 100),
-        description: wxOrderName,
-        notify_url: notifyUrl,
-        out_trade_no: uuid, // 使用自己的订单号
-        payer_client_ip: client_ip, // 仅 h5 有效
-      });
+    const totalCents = Math.round(parseFloat(money) * 100 + Number.EPSILON);
+    if (isNaN(totalCents) || totalCents <= 0) {
+      return fastify.resp.SYS_ERROR("金额转换错误");
+    }
+    let formData = wxpay.formData(isMobile ? "h5" : "native", {
+      total: totalCents,
+      description: wxOrderName,
+      notify_url: notifyUrl,
+      out_trade_no: uuid,
+      payer_client_ip: client_ip,
+    });
 
 try {
 	let wxresp = await wxpay.exec(formData);
@@ -230,24 +233,28 @@ try {
           payurl = wxresp.data.h5_url;
         }
 
-        // 订单写入数据库
-        let order = await fastify.db.models.Order.create({
-          id: uuid,
-          out_trade_no: out_trade_no, // 源 网站生成的订单号
-          notify_url: notify_url,
-          return_url: return_url,
-          type: type,
-          pid: pid,
-          title: name,
-          money: money,
-          status: 0,
-        });
+    const sanitizedMoney = security.sanitizeMoney(money);
+    if (!sanitizedMoney) {
+      return fastify.resp.SYS_ERROR("金额格式错误");
+    }
+    let order = await fastify.db.models.Order.create({
+      id: uuid,
+      out_trade_no: out_trade_no,
+      notify_url: notify_url,
+      return_url: return_url,
+      type: type,
+      pid: pid,
+      title: name,
+      money: sanitizedMoney,
+      status: 0,
+    });
 
         fastify.log.info("创建 " + type + " 订单成功：" + uuid);
-      } catch (e) {
-        let errmsg = e.response["data"]["message"];
-        return fastify.resp.SYS_ERROR(errmsg ? errmsg : "创建微信订单错误");
-      }
+    } catch (e) {
+      fastify.log.error("微信下单失败:", e);
+      const errmsg = e.response?.data?.message || e.message || "创建微信订单错误";
+      return fastify.resp.SYS_ERROR(errmsg);
+    }
     } else {
       return { code: 404, msg: "其他支付方式开发中" };
     }
@@ -258,7 +265,7 @@ try {
 
     return reply.view("/templates/submit.ejs", {
       payurl: payurl,
-      time: new Date().getTime(),
+      time: Date.now(),
       type: type_sgin,
     });
   });

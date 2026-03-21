@@ -1,23 +1,32 @@
 const stringUtils = require('../utils/stringutils')
 const epayUtils = require('../utils/epayutils')
-module.exports = async  function (fastify, opts) {
+const security = require('../utils/security');
 
-    fastify.get('/api/order_status', async function (request, reply) {
+module.exports = async function (fastify, opts) {
 
-        let out_trade_no = request.query['out_trade_no']
-        // wxpay  alipay
-        let type = request.query['type']
-        if (stringUtils.isEmpty(out_trade_no)) {
-            return fastify.resp.EMPTY_PARAMS('Params')
-        }
+  fastify.get('/api/order_status', async function (request, reply) {
+    const apiKey = request.headers['x-api-key'];
+    if (!apiKey || !fastify.apiKeys || !fastify.apiKeys.has(security.hashApiKey(apiKey))) {
+      return reply.code(401).send({ code: 401, msg: '未授权访问' });
+    }
 
-        let sequelize = fastify.db;
+    let out_trade_no = request.query['out_trade_no']
+    let type = request.query['type']
+    if (stringUtils.isEmpty(out_trade_no)) {
+      return fastify.resp.EMPTY_PARAMS('Params')
+    }
 
-        let order = await sequelize.models.Order.findOne({
-            where: {
-                id: out_trade_no
-            }
-        })
+    if (!/^[a-zA-Z0-9_-]+$/.test(out_trade_no)) {
+      return fastify.resp.SYS_ERROR('订单号格式无效');
+    }
+
+    let sequelize = fastify.db;
+
+    let order = await sequelize.models.Order.findOne({
+      where: {
+        id: out_trade_no
+      }
+    })
 
         if (order == null) {
             return fastify.resp.SYS_ERROR('订单不存在')

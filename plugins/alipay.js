@@ -1,30 +1,23 @@
-const AlipaySdk = require("alipay-sdk").default;
-const AlipayFormData = require("alipay-sdk/lib/form").default;
+const { AlipaySdk } = require("alipay-sdk");
 const fp = require("fastify-plugin");
 
 const payCachePool = {};
 
 class Alipay {
-  alipaySdk = null;
-  appId = "";
-
   constructor(appId, privateKey, alipayPublicKey) {
+    this.appId = appId;
     if (!appId || !privateKey || !alipayPublicKey) {
-      throw "create Alipay err";
+      throw new Error("create Alipay err: missing required parameters");
     }
-    if (payCachePool[appId] !== undefined) {
-      // 取缓存
+    if (payCachePool[appId]) {
       this.alipaySdk = payCachePool[appId];
     } else {
       this.alipaySdk = new AlipaySdk({
-        /** 支付宝网关 **/
-        gateway: "https://openapi.alipay.com/gateway.do",
-        appId: (this.appId = appId),
+        appId: appId,
         privateKey: privateKey,
         alipayPublicKey: alipayPublicKey,
         signType: "RSA2",
       });
-
       payCachePool[appId] = this.alipaySdk;
     }
   }
@@ -38,36 +31,29 @@ class Alipay {
     notifyUrl = "",
     returnUrl = "",
   ) {
-    let formData = new AlipayFormData();
-    formData.setMethod("get");
-    if (notifyUrl) {
-      formData.addField("notify_url", notifyUrl);
-    }
-    if (returnUrl) {
-      formData.addField("return_url", returnUrl);
-    }
-
-    formData.addField("bizContent", {
-      outTradeNo: outTradeNo, // 订单号
-      productCode: "FAST_INSTANT_TRADE_PAY", // 常量不需要修改
+    const bizContent = {
+      outTradeNo: outTradeNo,
+      productCode: "FAST_INSTANT_TRADE_PAY",
       totalAmount: totalAmount,
       subject: subject,
       body: body,
-    });
+    };
 
-    return this.alipaySdk.exec(
-      "alipay.trade." + agent + ".pay",
-      {},
-      {
-        formData: formData,
-      },
-      { validateSign: true },
-    );
+    const method = agent === "wap" ? "alipay.trade.wap.pay" : "alipay.trade.page.pay";
+
+    return this.alipaySdk.pageExecute(method, "GET", {
+      bizContent,
+      notifyUrl: notifyUrl || undefined,
+      returnUrl: returnUrl || undefined,
+    });
+  }
+
+  checkNotifySign(notifyData) {
+    return this.alipaySdk.checkNotifySign(notifyData);
   }
 }
 
 module.exports = fp(async function (fastify, opts) {
-  // 过滤不完整的支付宝通道配置，所有必填字段非空才启用
   let alipayRequiredFields = ["appId", "privateKey", "alipayPublicKey"];
   let validAlipayList = [];
   if (opts.alipay && opts.alipay.length > 0) {
@@ -79,12 +65,12 @@ module.exports = fp(async function (fastify, opts) {
       if (missingFields.length > 0) {
         fastify.log.warn(
           "Alipay 通道 #" +
-            i +
-            " (appId: " +
-            (cfg.appId || "空") +
-            ") 缺少字段: " +
-            missingFields.join(", ") +
-            "，已忽略",
+          i +
+          " (appId: " +
+          (cfg.appId || "空") +
+          ") 缺少字段: " +
+          missingFields.join(", ") +
+          "，已忽略",
         );
       } else {
         validAlipayList.push(cfg);
@@ -113,17 +99,17 @@ module.exports = fp(async function (fastify, opts) {
               alipayc.appId,
               alipayc.privateKey,
               alipayc.alipayPublicKey,
-            ).alipaySdk;
+            );
           } else {
             return null;
           }
         }
 
-        let alipayindex = Math.floor(Math.random() * len);
-        let alipayc = validAlipayList[alipayindex];
+  const crypto = require('crypto');
+    let alipayindex = crypto.randomInt(0, len);
+    let alipayc = validAlipayList[alipayindex];
 
-        fastify.log.info("随机使用 Alipay : " + alipayindex);
-        fastify.log.info(alipayc);
+    fastify.log.info({ channel: 'alipay', index: alipayindex, appId: alipayc.appId }, "随机使用 Alipay");
 
         return new Alipay(
           alipayc.appId,

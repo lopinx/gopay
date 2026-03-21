@@ -67,29 +67,41 @@ module.exports = fp(async function (fastify, opts) {
     throw new Error("不支持的数据库类型: " + dialect);
   }
 
-  // 映射数据库模型
   const Order = sequelize.define(
     "Order",
     {
       id: { type: DataTypes.STRING(40), primaryKey: true },
-      out_trade_no: DataTypes.STRING,
-      notify_url: DataTypes.STRING,
-      return_url: DataTypes.STRING,
-      type: DataTypes.STRING(10),
-      pid: DataTypes.INTEGER,
-      title: DataTypes.STRING,
-      money: DataTypes.STRING,
-      status: DataTypes.INTEGER,
-      attach: DataTypes.STRING,
+      out_trade_no: { type: DataTypes.STRING(64), allowNull: false },
+      notify_url: DataTypes.STRING(512),
+      return_url: DataTypes.STRING(512),
+      type: { type: DataTypes.STRING(10), allowNull: false },
+      pid: { type: DataTypes.INTEGER, allowNull: false },
+      title: DataTypes.STRING(128),
+      money: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+      status: { type: DataTypes.INTEGER, defaultValue: 0 },
+      attach: DataTypes.STRING(256),
     },
     {
       tableName: "gopay_order",
       createdAt: true,
       updatedAt: true,
+      indexes: [
+        { fields: ['out_trade_no'] },
+        { fields: ['pid'] },
+        { fields: ['status'] },
+        { fields: ['type'] },
+        { fields: ['createdAt'] },
+        { fields: ['out_trade_no', 'pid'] },
+      ],
     },
   );
 
   await sequelize.sync();
 
   fastify.decorate("db", sequelize);
+  
+  fastify.addHook('onClose', async () => {
+    await sequelize.close();
+    fastify.log.info('数据库连接已关闭');
+  });
 });

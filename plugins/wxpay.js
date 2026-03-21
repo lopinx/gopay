@@ -1,35 +1,26 @@
 const fp = require("fastify-plugin");
-const { Wechatpay, Formatter } = require("wechatpay-axios-plugin");
+const { Client } = require("wechatpay-node-v3");
 
-// sdk 缓存池
 const payCachePool = {};
 
 class Wxpay {
-  wxpaysdk;
-  appid;
-  mchid;
-  secret;
-  only_native;
-
   constructor(opts) {
     this.appid = opts.appId;
     this.mchid = opts.mchid;
     this.secret = opts.secret;
     this.only_native = opts.only_native;
 
-    if (payCachePool[opts.appId] !== undefined) {
-      // 取缓存
+    if (payCachePool[opts.appId]) {
       this.wxpaysdk = payCachePool[opts.appId];
     } else {
-      this.wxpaysdk = new Wechatpay({
+      this.wxpaysdk = new Client({
+        appid: opts.appId,
         mchid: opts.mchid,
-        serial: opts.serial, // 官网上的 serialno
+        serial: opts.serial,
         privateKey: opts.privateKey,
         certs: opts.certs,
-        // APIv2参数 >= 0.4.0 开始支持
-        secret: opts.secret,
+        key: opts.secret,
       });
-
       payCachePool[opts.appId] = this.wxpaysdk;
     }
   }
@@ -46,16 +37,9 @@ class Wxpay {
     return this.only_native;
   }
 
-  /**
-   *
-   * @param type
-   * @param data
-   * @returns {{amount: {total: (number|{jsMemoryEstimate: number, jsMemoryRange: [number, number]}|PaymentItem), currency: string}, mchid: (string|string), out_trade_no: (string|string), appid: *, description: (*|string), notify_url: StringDataTypeConstructor | string}|null|{amount: {total: (number|{jsMemoryEstimate: number, jsMemoryRange: [number, number]}|PaymentItem), currency: string}, mchid: any, out_trade_no: (string|string), appid: *, description: (*|string), attach: string, notify_url: StringDataTypeConstructor | string, scene_info: {h5_info: {app_name: string, app_url: string, type: string}, payer_client_ip: string}}}
-   */
   formData(type, data) {
     if (this.only_native) {
       type = "native";
-      // 当前渠道强制使用扫码
     }
     if (type === "h5") {
       return {
@@ -96,21 +80,19 @@ class Wxpay {
     }
   }
 
-  exec(formData) {
-    if (formData === null) {
-      throw "wxpay form is Null";
+  async exec(formData) {
+    if (formData === null || formData === undefined) {
+      throw new Error("wxpay form is Null");
     }
     if (formData.scene_info) {
-      // h5
-      return this.wxpaysdk.v3.pay.transactions.h5.post(formData);
+      return await this.wxpaysdk.chain("POST /v3/pay/transactions/h5", formData);
     } else {
-      return this.wxpaysdk.v3.pay.transactions.native.post(formData);
+      return await this.wxpaysdk.chain("POST /v3/pay/transactions/native", formData);
     }
   }
 }
 
 module.exports = fp(async function (fastify, opts) {
-  // 过滤不完整的微信支付通道配置，所有必填字段非空才启用
   let wxpayRequiredFields = [
     "appId",
     "mchid",
@@ -125,7 +107,6 @@ module.exports = fp(async function (fastify, opts) {
       let cfg = opts.wxpay[i];
       let missingFields = wxpayRequiredFields.filter(function (f) {
         if (f === "certs") {
-          // certs 必须是对象且至少有一个 key
           return (
             !cfg[f] ||
             typeof cfg[f] !== "object" ||
@@ -137,12 +118,12 @@ module.exports = fp(async function (fastify, opts) {
       if (missingFields.length > 0) {
         fastify.log.warn(
           "Wxpay 通道 #" +
-            i +
-            " (appId: " +
-            (cfg.appId || "空") +
-            ") 缺少字段: " +
-            missingFields.join(", ") +
-            "，已忽略",
+          i +
+          " (appId: " +
+          (cfg.appId || "空") +
+          ") 缺少字段: " +
+          missingFields.join(", ") +
+          "，已忽略",
         );
       } else {
         validWxpayList.push(cfg);
@@ -182,11 +163,11 @@ module.exports = fp(async function (fastify, opts) {
           }
         }
 
-        let wxpayindex = Math.floor(Math.random() * len);
-        let wxpayc = validWxpayList[wxpayindex];
+  const crypto = require('crypto');
+    let wxpayindex = crypto.randomInt(0, len);
+    let wxpayc = validWxpayList[wxpayindex];
 
-        fastify.log.info("随机使用 Wxpay : " + wxpayindex);
-        //fastify.log.info(wxpayc)
+    fastify.log.info({ channel: 'wxpay', index: wxpayindex, appId: wxpayc.appId }, "随机使用 Wxpay");
 
         return new Wxpay({
           appId: wxpayc.appId,
